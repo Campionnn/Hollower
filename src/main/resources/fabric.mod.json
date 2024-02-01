@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "hollower",
+	"version": "${version}",
+	"name": "Hollower",
+	"description": "Mod to create routes for Hypixel Skyblock Crystal Hollows",
+	"authors": [
+		"Campion"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/hollower/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.hollower.Hollower"
+		],
+		"client": [
+			"com.hollower.HollowerClient"
+		],
+		"fabric-datagen": [
+			"com.hollower.HollowerDataGenerator"
+		]
+	},
+	"mixins": [
+		"hollower.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.6",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
