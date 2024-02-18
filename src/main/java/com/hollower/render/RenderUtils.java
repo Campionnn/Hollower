@@ -20,7 +20,6 @@ public class RenderUtils {
      * Multiplies and translates the current model view matrix to be relative to the world instead of the camera.
      */
     private static void correctView() {
-
         Vec3d cameraPos = camera.getPos();
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
@@ -29,6 +28,9 @@ public class RenderUtils {
         matrixStack.scale(-1.0F, 1.0F, -1.0F);
         matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         RenderSystem.applyModelViewMatrix();
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
     }
 
     /**
@@ -37,6 +39,8 @@ public class RenderUtils {
     private static void revertView() {
         RenderSystem.getModelViewStack().pop();
         RenderSystem.applyModelViewMatrix();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
     }
 
     /**
@@ -50,7 +54,6 @@ public class RenderUtils {
     public static void drawLines(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
         correctView();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        RenderSystem.disableCull();
         RenderSystem.lineWidth(thickness);
 
         if (!depthTest) {
@@ -71,7 +74,6 @@ public class RenderUtils {
             RenderSystem.enableDepthTest();
         }
 
-        RenderSystem.enableCull();
         revertView();
     }
 
@@ -86,7 +88,6 @@ public class RenderUtils {
     public static void highlightBlocks(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
         correctView();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        RenderSystem.disableCull();
         RenderSystem.lineWidth(thickness);
 
         if (!depthTest) {
@@ -148,7 +149,6 @@ public class RenderUtils {
             RenderSystem.enableDepthTest();
         }
 
-        RenderSystem.enableCull();
         revertView();
     }
 
@@ -162,9 +162,6 @@ public class RenderUtils {
     public static void selectBlock(BlockPos pos, Color color, boolean depthTest) {
         correctView();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
 
         if (!depthTest) {
             RenderSystem.disableDepthTest();
@@ -216,8 +213,6 @@ public class RenderUtils {
             RenderSystem.enableDepthTest();
         }
 
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
         revertView();
     }
 }
