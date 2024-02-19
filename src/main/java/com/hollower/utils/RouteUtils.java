@@ -21,9 +21,9 @@ public class RouteUtils {
         double yawRadians = Math.toRadians(camera.getYaw() + 90);
         double pitchRadians = Math.toRadians(camera.getPitch() * -1);
 
-        double dirX = 1.0f / (Math.cos(yawRadians) * Math.cos(pitchRadians));
-        double dirY = 1.0f / (Math.sin(pitchRadians));
-        double dirZ = 1.0f / (Math.sin(yawRadians) * Math.cos(pitchRadians));
+        double invX = 1.0f / (Math.cos(yawRadians) * Math.cos(pitchRadians));
+        double invY = 1.0f / (Math.sin(pitchRadians));
+        double invZ = 1.0f / (Math.sin(yawRadians) * Math.cos(pitchRadians));
 
         double minDistance = Double.MAX_VALUE;
         BlockPos minPos = null;
@@ -32,20 +32,20 @@ public class RouteUtils {
             Vec3d A = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
             Vec3d B = new Vec3d(pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1).multiply(1.0, 1.0, 1.0);
 
-            double tx1 = (A.x - cameraPos.x) * dirX;
-            double tx2 = (B.x - cameraPos.x) * dirX;
+            double tx1 = (A.x - cameraPos.x) * invX;
+            double tx2 = (B.x - cameraPos.x) * invX;
 
             double tmin = Math.min(tx1, tx2);
             double tmax = Math.max(tx1, tx2);
 
-            double ty1 = (A.y - cameraPos.y) * dirY;
-            double ty2 = (B.y - cameraPos.y) * dirY;
+            double ty1 = (A.y - cameraPos.y) * invY;
+            double ty2 = (B.y - cameraPos.y) * invY;
 
             tmin = Math.max(tmin, Math.min(ty1, ty2));
             tmax = Math.min(tmax, Math.max(ty1, ty2));
 
-            double tz1 = (A.z - cameraPos.z) * dirZ;
-            double tz2 = (B.z - cameraPos.z) * dirZ;
+            double tz1 = (A.z - cameraPos.z) * invZ;
+            double tz2 = (B.z - cameraPos.z) * invZ;
 
             tmin = Math.max(tmin, Math.min(tz1, tz2));
             tmax = Math.min(tmax, Math.max(tz1, tz2));
