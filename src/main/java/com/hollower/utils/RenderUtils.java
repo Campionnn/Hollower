@@ -31,6 +31,7 @@ public class RenderUtils {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderFogEnd(Float.MAX_VALUE);
     }
 
     /**
@@ -41,6 +42,7 @@ public class RenderUtils {
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
+        RenderSystem.setShaderFogEnd(96.0f);
     }
 
     /**
