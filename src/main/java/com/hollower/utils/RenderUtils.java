@@ -217,4 +217,35 @@ public class RenderUtils {
 
         revertView();
     }
+
+    /**
+     * Renders the order of the given positions above them.
+     *
+     * @param positions the positions to render the order of
+     */
+    public static void renderOrder(List<BlockPos> positions) {
+        if (positions.isEmpty()) return;
+
+        TextRenderer textRenderer = client.textRenderer;
+        Vec3d cameraPos = camera.getPos();
+
+        float angleX = camera.getPitch() * (float) (Math.PI / 180.0);
+        float angleY = (camera.getYaw() + 180) * (float) (Math.PI / 180.0);
+        Quaternionf rot = new Quaternionf().rotationXYZ(angleX, angleY, 0.0F);
+
+        for (BlockPos pos : positions) {
+            matrixStack.push();
+            matrixStack.multiply(rot);
+            matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+            matrixStack.translate(pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5);
+            matrixStack.multiply(camera.getRotation());
+            matrixStack.scale(-0.04F, -0.04f, 0.04f);
+
+            Matrix4f positionMatrix = matrixStack.peek().getPositionMatrix();
+            VertexConsumerProvider consumers = client.getBufferBuilders().getOutlineVertexConsumers();
+            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, new Color(255, 255, 255).getRGB(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, new Color(0, 0, 0, 70).getRGB(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+
+            matrixStack.pop();
+        }
+    }
 }
