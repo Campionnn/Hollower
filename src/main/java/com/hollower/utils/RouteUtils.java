@@ -12,9 +12,10 @@ import java.util.List;
 
 public class RouteUtils {
     /**
-     * Raycasts to the given positions using camera and returns the position of the closest position hit.
+     * Raycasts to the given positions using camera and returns the position of the closest block hit.
      *
      * @param positions the positions to raycast
+     * @param maxReach the maximum reach of the raycast
      * @return the pos of the closest block hit in positions
      */
     public static BlockPos getNodeRaycast(List<BlockPos> positions, int maxReach) {
@@ -78,6 +79,16 @@ public class RouteUtils {
      *
      * @return the position of the closest block hit
      */
+    public static BlockPos getNodeRaycast() {
+        return getNodeRaycast(Hollower.positions, Hollower.maxReach);
+    }
+
+    /**
+     * Raycasts to the given positions using camera and returns the position of the closest block hit.
+     *
+     * @param maxReach the maximum reach of the raycast
+     * @return the position of the closest block hit
+     */
     public static BlockPos getRaycast(int maxReach) {
         MinecraftClient client = MinecraftClient.getInstance();
         assert client.cameraEntity != null;
@@ -88,6 +99,15 @@ public class RouteUtils {
             return blockHit.getBlockPos();
         }
         return null;
+    }
+
+    /**
+     * Raycasts to the given positions using camera and returns the position of the closest block hit.
+     *
+     * @return the position of the closest block hit
+     */
+    public static BlockPos getRaycast() {
+        return getRaycast(Hollower.maxReach);
     }
 
     public static float getDistance(BlockPos pos1, BlockPos pos2) {

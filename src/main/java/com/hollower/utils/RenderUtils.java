@@ -88,6 +88,17 @@ public class RenderUtils {
     }
 
     /**
+     * Draws a line strip between Hollower.positions with the given color and thickness.
+     *
+     * @param color     the color of the lines
+     * @param thickness the thickness of the lines
+     * @param depthTest whether to use depth testing when drawing the lines
+     */
+    public static void drawLines(Color color, float thickness, boolean depthTest) {
+        drawLines(Hollower.positions, color, thickness, depthTest);
+    }
+
+    /**
      * Draws a line along each edge of the given block positions with the given color and thickness.
      *
      * @param positions the positions to draw lines between
@@ -165,6 +176,17 @@ public class RenderUtils {
     }
 
     /**
+     * Draws a line along each edge of the block at Hollower.positions with the given color and thickness.
+     *
+     * @param color     the color of the block
+     * @param thickness the thickness of the block
+     * @param depthTest whether to use depth testing when drawing the block
+     */
+    public static void highlightBlocks(Color color, float thickness, boolean depthTest) {
+        highlightBlocks(Hollower.positions, color, thickness, depthTest);
+    }
+
+    /**
      * Highlight the sides of the block at the given position with the given color.
      *
      * @param pos       the position of the block
@@ -231,6 +253,16 @@ public class RenderUtils {
     }
 
     /**
+     * Highlight the sides of the block at Hollower.selected with the given color.
+     *
+     * @param color     the color of the block
+     * @param depthTest whether to use depth testing when drawing the block
+     */
+    public static void selectBlock(Color color, boolean depthTest) {
+        selectBlock(Hollower.selected, color, depthTest);
+    }
+
+    /**
      * Renders the order of the given positions above them.
      *
      * @param positions the positions to render the order of
@@ -259,5 +291,12 @@ public class RenderUtils {
 
             matrixStack.pop();
         }
+    }
+
+    /**
+     * Renders the order of Hollower.positions above them.
+     */
+    public static void renderOrder() {
+        renderOrder(Hollower.positions);
     }
 }

@@ -23,13 +23,13 @@ public abstract class MouseMixin {
         if (client.getWindow().getHandle() != window) return;
         if (PlayerUtils.isHoldingTool()) {
             int amount = vertical > 0 ? 1 : -1;
-            if (Hollower.keys.get(Hollower.nudgeKey) && Hollower.selected != null) {
+            if (Hollower.keysHold.get(Hollower.nudgeKey) && Hollower.selected != null) {
                 int index = Hollower.positions.indexOf(Hollower.selected);
                 Hollower.selected = Hollower.selected.offset(PlayerUtils.getClosestLookingDirection(), amount);
                 Hollower.positions.set(index, Hollower.selected);
                 ci.cancel();
             }
-            if (Hollower.keys.get(Hollower.swapOrderKey)) {
+            if (Hollower.keysHold.get(Hollower.swapOrderKey)) {
                 if (amount == -1) {
                     BlockPos last = Hollower.positions.remove(Hollower.positions.size() - 1);
                     Hollower.positions.add(0, last);

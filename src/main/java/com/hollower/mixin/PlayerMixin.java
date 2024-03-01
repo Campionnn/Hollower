@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
-public class PlayerMixin {
 public abstract class PlayerMixin {
     @Shadow
     static MinecraftClient instance;
@@ -25,7 +24,7 @@ public abstract class PlayerMixin {
     @Inject(at = @At("HEAD"), method = "doAttack", cancellable = true)
     private void doAttack(CallbackInfoReturnable<Boolean> cir) {
         if (PlayerUtils.isHoldingTool()) {
-            BlockPos pos = RouteUtils.getNodeRaycast(Hollower.positions, Hollower.maxReach);
+            BlockPos pos = RouteUtils.getNodeRaycast();
             if (pos != null) {
                 if (pos.equals(Hollower.selected)) {
                     Hollower.selected = null;
@@ -41,9 +40,8 @@ public abstract class PlayerMixin {
     private void doItemUse(CallbackInfo ci) {
         if (PlayerUtils.isHoldingTool()) {
             // prevent spam if use key is held down
-            if (Hollower.client.world.getTime() - Hollower.lastToolUseTick > 2) {
-                if (Hollower.keys.get(Hollower.etherwarpKey)) {
             if (instance.world.getTime() - Hollower.lastToolUseTick > 2) {
+                if (Hollower.keysHold.get(Hollower.etherwarpKey)) {
                     BlockPos pos = RouteUtils.getRaycast(61);
                     if (pos != null) {
                         BlockPos teleportPos = pos.offset(Direction.UP);
@@ -57,7 +55,7 @@ public abstract class PlayerMixin {
                     }
                 }
                 else {
-                    BlockPos pos = RouteUtils.getRaycast(Hollower.maxReach);
+                    BlockPos pos = RouteUtils.getRaycast();
                     if (pos != null) {
                         if (!Hollower.positions.contains(pos)) {
                             if (Hollower.selected != null) {
@@ -77,11 +75,11 @@ public abstract class PlayerMixin {
     @Inject(at = @At("HEAD"), method = "doItemPick", cancellable = true)
     private void doItemPick(CallbackInfo ci) {
         if (PlayerUtils.isHoldingTool()) {
-            if (!Hollower.keys.get(Hollower.swapOrderKey)) {
-                Hollower.selected = RouteUtils.getNodeRaycast(Hollower.positions, Hollower.maxReach);
+            if (!Hollower.keysHold.get(Hollower.swapOrderKey)) {
+                Hollower.selected = RouteUtils.getNodeRaycast();
             }
             else if (Hollower.selected != null)	{
-                BlockPos pos = RouteUtils.getNodeRaycast(Hollower.positions, Hollower.maxReach);
+                BlockPos pos = RouteUtils.getNodeRaycast();
                 if (pos != null) {
                     int index1 = Hollower.positions.indexOf(Hollower.selected);
                     int index2 = Hollower.positions.indexOf(pos);

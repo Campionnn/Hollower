@@ -3,7 +3,6 @@ package com.hollower;
 import com.hollower.utils.PlayerUtils;
 import com.hollower.utils.RouteUtils;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Hollower implements ClientModInitializer {
@@ -32,11 +32,33 @@ public class Hollower implements ClientModInitializer {
     public static int nudgeKey = GLFW.GLFW_KEY_LEFT_CONTROL;
     public static int swapOrderKey = GLFW.GLFW_KEY_LEFT_ALT;
     public static int etherwarpKey = GLFW.GLFW_KEY_LEFT_SHIFT;
-    public static Map<Integer, Boolean> keys = new HashMap<>();
+    public static Map<Integer, Boolean> keysHold = new HashMap<>();
     static {
-        keys.put(nudgeKey, false);
-        keys.put(swapOrderKey, false);
-        keys.put(etherwarpKey, false);
+        keysHold.put(nudgeKey, false);
+        keysHold.put(swapOrderKey, false);
+        keysHold.put(etherwarpKey, false);
+    }
+    public static int toggleRenderKey = GLFW.GLFW_KEY_X;
+    public static Map<Integer, Boolean> keysToggle = new HashMap<>();
+    static {
+        keysToggle.put(toggleRenderKey, false);
+    }
+    public static ConcurrentHashMap<Long, ListMapEntry> renderBlacklist = new ConcurrentHashMap<>();
+
+    public static class ListMapEntry {
+        public final BlockPos originalPosition;
+        public BlockPos currentPosition;
+        public boolean preserve = false;
+
+        ListMapEntry(BlockPos pos) {
+            originalPosition = pos;
+            currentPosition = pos;
+        }
+
+        ListMapEntry(BlockPos pos, boolean preserve) {
+            this(pos);
+            this.preserve = preserve;
+        }
     }
 
     @Override
@@ -44,21 +66,24 @@ public class Hollower implements ClientModInitializer {
         AttackBlockCallback.EVENT.register(new PlayerUtils());
 
         WorldRenderEvents.LAST.register((context) -> {
-            RenderUtils.drawLines(positions, Color.RED, 3.0F, false);
-            RenderUtils.highlightBlocks(positions, Color.GREEN, 2.0f, false);
-            RenderUtils.selectBlock(selected, new Color(0, 0, 255, 64), false);
-            if (keys.get(etherwarpKey) && PlayerUtils.isHoldingTool()) {
+            RenderUtils.drawLines(Color.RED, 3.0F, false);
+            RenderUtils.highlightBlocks(Color.GREEN, 2.0f, false);
+            RenderUtils.selectBlock(new Color(0, 0, 255, 64), false);
+            if (keysHold.get(etherwarpKey) && PlayerUtils.isHoldingTool()) {
                 BlockPos etherwarpPos = RouteUtils.getRaycast(61);
                 RenderUtils.selectBlock(etherwarpPos, new Color(255, 0, 255, 64), false);
             }
 
-            RenderUtils.renderOrder(positions);
+            RenderUtils.renderOrder();
         });
     }
 
     public static void onKeyEvent(int key, int scancode, int action, int modifiers) {
-        if (keys.containsKey(key)) {
-            keys.put(key, action != GLFW.GLFW_RELEASE);
+        if (keysHold.containsKey(key)) {
+            keysHold.put(key, action != GLFW.GLFW_RELEASE);
+        }
+        if (keysToggle.containsKey(key) && action == GLFW.GLFW_PRESS) {
+            keysToggle.put(key, !keysToggle.get(key));
         }
     }
 }
