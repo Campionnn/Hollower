@@ -3,16 +3,14 @@ package com.hollower.mixin;
 import com.hollower.Hollower;
 import com.hollower.utils.PlayerUtils;
 import com.hollower.utils.RouteUtils;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,6 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public class PlayerMixin {
+public abstract class PlayerMixin {
+    @Shadow
+    static MinecraftClient instance;
+
     @Inject(at = @At("HEAD"), method = "doAttack", cancellable = true)
     private void doAttack(CallbackInfoReturnable<Boolean> cir) {
         if (PlayerUtils.isHoldingTool()) {
@@ -41,15 +43,16 @@ public class PlayerMixin {
             // prevent spam if use key is held down
             if (Hollower.client.world.getTime() - Hollower.lastToolUseTick > 2) {
                 if (Hollower.keys.get(Hollower.etherwarpKey)) {
+            if (instance.world.getTime() - Hollower.lastToolUseTick > 2) {
                     BlockPos pos = RouteUtils.getRaycast(61);
                     if (pos != null) {
                         BlockPos teleportPos = pos.offset(Direction.UP);
-                        if (Hollower.client.world.getBlockState(pos.offset(Direction.UP)).isAir() && Hollower.client.world.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
-                            Hollower.client.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
-                            Hollower.client.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
+                        if (instance.world.getBlockState(pos.offset(Direction.UP)).isAir() && instance.world.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
+                            instance.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
+                            instance.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
                         }
                         else {
-                            Hollower.client.player.sendMessage(Text.of("§cCannot teleport to that location"), false);
+                            instance.player.sendMessage(Text.of("§cCannot teleport to that location"), false);
                         }
                     }
                 }
@@ -66,7 +69,7 @@ public class PlayerMixin {
                     }
                 }
             }
-            Hollower.lastToolUseTick = MinecraftClient.getInstance().world.getTime();
+            Hollower.lastToolUseTick = instance.world.getTime();
             ci.cancel();
         }
     }

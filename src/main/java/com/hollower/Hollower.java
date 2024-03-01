@@ -25,7 +25,6 @@ import java.util.Map;
 public class Hollower implements ClientModInitializer {
     public static final String MOD_ID = "hollower";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static MinecraftClient client = MinecraftClient.getInstance();
     public static long lastToolUseTick;
     public static List<BlockPos> positions = new ArrayList<>();
     public static int maxReach = 20;
