@@ -1,7 +1,10 @@
 package com.hollower.utils;
 
+import com.hollower.Hollower;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -9,12 +12,12 @@ import java.util.List;
 
 public class RouteUtils {
     /**
-     * Raycasts to the given positions and returns the position of the closest block hit.
+     * Raycasts to the given positions using camera and returns the position of the closest position hit.
      *
      * @param positions the positions to raycast
-     * @return the position of the closest block hit
+     * @return the pos of the closest block hit in positions
      */
-    public static BlockPos getNodeRaycast(List<BlockPos> positions) {
+    public static BlockPos getNodeRaycast(List<BlockPos> positions, int maxReach) {
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
         Vec3d cameraPos = camera.getPos();
 
@@ -59,11 +62,35 @@ public class RouteUtils {
             }
 
             double distance = cameraPos.distanceTo(new Vec3d(pos.getX(), pos.getY(), pos.getZ()));
+            if (distance > maxReach) {
+                continue;
+            }
             if (distance < minDistance) {
                 minDistance = distance;
                 minPos = pos;
             }
         }
         return minPos;
+    }
+
+    /**
+     * Raycasts to the given positions using camera and returns the position of the closest block hit.
+     *
+     * @return the position of the closest block hit
+     */
+    public static BlockPos getRaycast(int maxReach) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        assert client.cameraEntity != null;
+        HitResult hit = client.cameraEntity.raycast(maxReach, 1.0f, false);
+
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult blockHit = (BlockHitResult) hit;
+            return blockHit.getBlockPos();
+        }
+        return null;
+    }
+
+    public static float getDistance(BlockPos pos1, BlockPos pos2) {
+        return (float) Math.sqrt(Math.pow(pos1.getX() - pos2.getX(), 2) + Math.pow(pos1.getY() - pos2.getY(), 2) + Math.pow(pos1.getZ() - pos2.getZ(), 2));
     }
 }
