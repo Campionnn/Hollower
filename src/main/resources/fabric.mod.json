@@ -16,13 +16,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.hollower.Hollower"
+
 		],
 		"client": [
-			"com.hollower.HollowerClient"
+			"com.hollower.Hollower"
 		],
 		"fabric-datagen": [
-			"com.hollower.HollowerDataGenerator"
+
 		]
 	},
 	"mixins": [
