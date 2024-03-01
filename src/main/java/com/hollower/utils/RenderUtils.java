@@ -1,11 +1,13 @@
-package com.hollower.render;
+package com.hollower.utils;
 
+import com.hollower.Hollower;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.awt.*;
@@ -14,16 +16,19 @@ import java.util.List;
 public class RenderUtils {
     static Tessellator tessellator = Tessellator.getInstance();
     static BufferBuilder buffer = tessellator.getBuffer();
-    static Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+    static MatrixStack matrixStack = RenderSystem.getModelViewStack();
+    static MinecraftClient client = MinecraftClient.getInstance();
+    static Camera camera = client.gameRenderer.getCamera();
 
     /**
      * Multiplies and translates the current model view matrix to be relative to the world instead of the camera.
      */
     private static void correctView() {
         Vec3d cameraPos = camera.getPos();
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
-        Quaternionf rot = new Quaternionf().rotationXYZ(camera.getPitch() * (float) (Math.PI / 180.0), camera.getYaw() * (float) (Math.PI / 180.0), 0.0F);
+        float angleX = camera.getPitch() * (float) (Math.PI / 180.0);
+        float angleY = camera.getYaw() * (float) (Math.PI / 180.0);
+        Quaternionf rot = new Quaternionf().rotationXYZ(angleX, angleY, 0.0F);
         matrixStack.multiply(rot);
         matrixStack.scale(-1.0F, 1.0F, -1.0F);
         matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
@@ -54,6 +59,8 @@ public class RenderUtils {
      * @param depthTest  whether to use depth testing when drawing the lines
      */
     public static void drawLines(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
+        if (positions.isEmpty()) return;
+
         correctView();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         RenderSystem.lineWidth(thickness);
@@ -70,6 +77,7 @@ public class RenderUtils {
         for (BlockPos pos : positions) {
             buffer.vertex(pos.getX() + 0.5d, pos.getY() + 0.5d, pos.getZ() + 0.5d).color(r, g, b, a).next();
         }
+        buffer.vertex(positions.get(0).getX() + 0.5d, positions.get(0).getY() + 0.5d, positions.get(0).getZ() + 0.5d).color(r, g, b, a).next();
         tessellator.draw();
 
         if (!depthTest) {
@@ -88,6 +96,8 @@ public class RenderUtils {
      * @param depthTest whether to use depth testing when drawing the lines
      */
     public static void highlightBlocks(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
+        if (positions.isEmpty()) return;
+
         correctView();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         RenderSystem.lineWidth(thickness);
@@ -162,6 +172,8 @@ public class RenderUtils {
      * @param depthTest whether to use depth testing when drawing the block
      */
     public static void selectBlock(BlockPos pos, Color color, boolean depthTest) {
+        if (pos == null) return;
+
         correctView();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
