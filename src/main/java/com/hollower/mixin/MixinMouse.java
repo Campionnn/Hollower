@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mouse.class)
-public abstract class MouseMixin {
+public abstract class MixinMouse {
     @Final
     @Shadow
     private MinecraftClient client;
