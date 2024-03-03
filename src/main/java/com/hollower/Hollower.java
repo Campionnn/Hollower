@@ -32,6 +32,7 @@ public class Hollower implements ClientModInitializer {
     public static int nudgeKey = GLFW.GLFW_KEY_LEFT_CONTROL;
     public static int swapOrderKey = GLFW.GLFW_KEY_LEFT_ALT;
     public static int etherwarpKey = GLFW.GLFW_KEY_LEFT_SHIFT;
+    public static BlockPos lastTeleportPos;
     public static Map<Integer, Boolean> keysHold = new HashMap<>();
     static {
         keysHold.put(nudgeKey, false);
