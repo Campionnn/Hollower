@@ -64,7 +64,7 @@ public class Hollower implements ClientModInitializer {
         });
     }
 
-    public static void onKeyEvent(int key, int scancode, int action, int modifiers) {
+    public static void onKeyEvent(int key, int action) {
         if (keysHold.containsKey(key)) {
             keysHold.put(key, action != GLFW.GLFW_RELEASE);
             return;
