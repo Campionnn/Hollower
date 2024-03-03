@@ -44,30 +44,25 @@ public abstract class MixinClientPlayNetworkHandler {
         int cz = packet.getZ();
         RenderTweaks.loadFakeChunk(cx, cz);
 
-        if (!Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
-            return;
-        }
+        if (!Hollower.keysToggle.get(Hollower.toggleRenderKey)) return;
         WorldChunk worldChunk = this.world.getChunkManager().getWorldChunk(cx, cz);
+        if (worldChunk == null) return;
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+        ChunkSection[] sections = worldChunk.getSectionArray();
+        for (int i = 0; i < sections.length; i++) {
+            ChunkSection section = sections[i];
+            if (section == null || section.isEmpty()) return;
+            for (int j = 0; j < 16*16*16; j++) {
+                int x = j & 0xF;
+                int y = (j >> 4) & 0xF;
+                int z = (j >> 8) & 0xF;
 
-        if (worldChunk != null) {
-            BlockPos.Mutable pos = new BlockPos.Mutable();
-            ChunkSection[] sections = worldChunk.getSectionArray();
-            for (int i = 0; i < sections.length; i++) {
-                ChunkSection section = sections[i];
-                if (section != null && !section.isEmpty()) {
-                    for (int j = 0; j < 16*16*16; j++) {
-                        int x = j & 0xF;
-                        int y = (j >> 4) & 0xF;
-                        int z = (j >> 8) & 0xF;
+                pos.set(x + worldChunk.getPos().getStartX(), y + this.world.sectionIndexToCoord(i) * 16, z + worldChunk.getPos().getStartZ());
 
-                        pos.set(x + worldChunk.getPos().getStartX(), y + this.world.sectionIndexToCoord(i) * 16, z + worldChunk.getPos().getStartZ());
-
-                        if (RenderTweaks.shouldHideBlock(pos)) {
-                            BlockState state = section.getBlockState(x, y, z);
-                            worldChunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
-                            RenderTweaks.setFakeBlockState(pos, state);
-                        }
-                    }
+                if (RenderTweaks.shouldHideBlock(pos)) {
+                    BlockState state = section.getBlockState(x, y, z);
+                    worldChunk.setBlockState(pos, Blocks.AIR.getDefaultState(), false);
+                    RenderTweaks.setFakeBlockState(pos, state);
                 }
             }
         }
