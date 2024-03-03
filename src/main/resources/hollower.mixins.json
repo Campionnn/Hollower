@@ -3,16 +3,17 @@
   "package": "com.hollower.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MixinWorld"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
+    "MixinChatScreen",
+    "MixinClientPlayNetworkHandler",
+    "MixinIntegratedServerLoader",
     "MixinKeyboard",
     "MixinMouse",
     "MixinPlayer",
-    "MixinClientPlayNetworkHandler",
-    "MixinIntegratedServerLoader"
+    "MixinWorld"
   ]
 }

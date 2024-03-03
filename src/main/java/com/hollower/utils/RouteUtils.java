@@ -11,6 +11,46 @@ import net.minecraft.util.math.Vec3d;
 import java.util.List;
 
 public class RouteUtils {
+    public static void addPosition(BlockPos pos) {
+        if (pos == null) return;
+
+        if (!Hollower.positions.contains(pos)) {
+            if (Hollower.selected != null) {
+                Hollower.positions.add(Hollower.positions.indexOf(Hollower.selected) + 1, pos);
+            } else {
+                Hollower.positions.add(pos);
+            }
+        }
+    }
+
+    public static void removePosition(BlockPos pos) {
+        if (pos == null) return;
+
+        if (pos.equals(Hollower.selected)) {
+            Hollower.selected = null;
+        }
+        Hollower.positions.remove(pos);
+    }
+
+    public static void selectPosition(BlockPos pos) {
+        Hollower.selected = pos;
+    }
+
+    public static void swapPositions(BlockPos pos) {
+        if (pos == null || Hollower.selected == null || pos == Hollower.selected) return;
+
+        int indexSelected = Hollower.positions.indexOf(Hollower.selected);
+        int indexPos = Hollower.positions.indexOf(pos);
+        Hollower.positions.set(indexSelected, pos);
+        Hollower.positions.set(indexPos, Hollower.selected);
+        Hollower.selected = pos;
+    }
+
+    public static void clearPositions() {
+        Hollower.positions.clear();
+        Hollower.selected = null;
+    }
+
     /**
      * Raycasts to the given positions using camera and returns the position of the closest block hit.
      *
@@ -110,6 +150,13 @@ public class RouteUtils {
         return getRaycast(Hollower.maxReach);
     }
 
+    /**
+     * Returns the distance between two positions.
+     *
+     * @param pos1 the first position
+     * @param pos2 the second position
+     * @return the distance between the two positions
+     */
     public static float getDistance(BlockPos pos1, BlockPos pos2) {
         return (float) Math.sqrt(Math.pow(pos1.getX() - pos2.getX(), 2) + Math.pow(pos1.getY() - pos2.getY(), 2) + Math.pow(pos1.getZ() - pos2.getZ(), 2));
     }

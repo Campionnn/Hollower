@@ -1,6 +1,9 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import com.hollower.mixin.MixinPlayer;
+import com.hollower.tweaks.RenderTweaks;
+import com.hollower.world.FakeWorld;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -10,6 +13,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
@@ -19,6 +25,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerUtils implements AttackBlockCallback {
+    private static final MinecraftClient client = MinecraftClient.getInstance();
+
     @Override
     public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction) {
         if (world.isClient) {
@@ -28,8 +36,6 @@ public class PlayerUtils implements AttackBlockCallback {
         }
         return ActionResult.PASS;
     }
-
-    private static final MinecraftClient client = MinecraftClient.getInstance();
 
     /**
      * Check if the player is holding a wooden pickaxe
@@ -56,5 +62,26 @@ public class PlayerUtils implements AttackBlockCallback {
         }
 
         return Direction.fromRotation(entity.getYaw());
+    }
+
+    public static void etherwarp() {
+        BlockPos pos = RouteUtils.getRaycast(61);
+        if (pos != null) {
+            if (!client.world.getBlockState(pos.offset(Direction.UP)).isAir() || !client.world.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
+                client.player.sendMessage(Text.of("§cCannot teleport to that location"), false);
+                return;
+            }
+            else if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
+                FakeWorld fakeWorld = RenderTweaks.getFakeWorld();
+                if (!fakeWorld.getBlockState(pos.offset(Direction.UP)).isAir() || !fakeWorld.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
+                    client.player.sendMessage(Text.of("§cCannot teleport to that location due to unrendered blocks"), false);
+                    return;
+                }
+            }
+            BlockPos teleportPos = pos.offset(Direction.UP);
+            Hollower.lastTeleportPos = teleportPos;
+            client.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
+            client.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
+        }
     }
 }
