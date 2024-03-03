@@ -44,8 +44,8 @@ public class Hollower implements ClientModInitializer {
     static {
         keysToggle.put(toggleRenderKey, false);
     }
-    public static ConcurrentHashMap<Long, BlockPos> renderBlacklist = new ConcurrentHashMap<Long, BlockPos>();
-    public static ConcurrentHashMap<Long, BlockPos> renderBlacklistCache = new ConcurrentHashMap<Long, BlockPos>();
+    public static ConcurrentHashMap<Long, BlockPos> renderBlacklist = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, BlockPos> renderBlacklistCache = new ConcurrentHashMap<>();
 
     @Override
     public void onInitializeClient() {
