@@ -1,12 +1,12 @@
 package com.hollower;
 
+import com.hollower.tweaks.RenderTweaks;
 import com.hollower.utils.PlayerUtils;
 import com.hollower.utils.RouteUtils;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -44,23 +44,8 @@ public class Hollower implements ClientModInitializer {
     static {
         keysToggle.put(toggleRenderKey, false);
     }
-    public static ConcurrentHashMap<Long, ListMapEntry> renderBlacklist = new ConcurrentHashMap<>();
-
-    public static class ListMapEntry {
-        public final BlockPos originalPosition;
-        public BlockPos currentPosition;
-        public boolean preserve = false;
-
-        ListMapEntry(BlockPos pos) {
-            originalPosition = pos;
-            currentPosition = pos;
-        }
-
-        ListMapEntry(BlockPos pos, boolean preserve) {
-            this(pos);
-            this.preserve = preserve;
-        }
-    }
+    public static ConcurrentHashMap<Long, BlockPos> renderBlacklist = new ConcurrentHashMap<Long, BlockPos>();
+    public static ConcurrentHashMap<Long, BlockPos> renderBlacklistCache = new ConcurrentHashMap<Long, BlockPos>();
 
     @Override
     public void onInitializeClient() {
@@ -82,9 +67,14 @@ public class Hollower implements ClientModInitializer {
     public static void onKeyEvent(int key, int scancode, int action, int modifiers) {
         if (keysHold.containsKey(key)) {
             keysHold.put(key, action != GLFW.GLFW_RELEASE);
+            return;
         }
         if (keysToggle.containsKey(key) && action == GLFW.GLFW_PRESS) {
             keysToggle.put(key, !keysToggle.get(key));
+            if (key == toggleRenderKey) {
+                RenderTweaks.reloadSelective();
+            }
+            return;
         }
     }
 }
