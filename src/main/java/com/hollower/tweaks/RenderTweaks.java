@@ -52,36 +52,36 @@ public class RenderTweaks {
     }
 
     public static void reloadSelectiveInternal() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null) return;
+        World world = MinecraftClient.getInstance().world;
+        if (world == null) return;
 
         if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
             for (BlockPos entry : Hollower.renderBlacklist.values()) {
-                hideRenderAtPos(entry, client);
+                hideRenderAtPos(entry, world);
             }
         }
         else {
             for (BlockPos entry : Hollower.renderBlacklist.values()) {
-                showRenderAtPos(entry, client);
+                showRenderAtPos(entry, world);
             }
         }
     }
 
-    public static void hideRenderAtPos(BlockPos pos, MinecraftClient client) {
-        BlockState state = client.world.getBlockState(pos);
+    public static void hideRenderAtPos(BlockPos pos, World world) {
+        BlockState state = world.getBlockState(pos);
         if (!state.isAir()) {
-            client.world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
             setFakeBlockState(pos, state);
         }
     }
 
-    public static void showRenderAtPos(BlockPos pos, MinecraftClient client) {
-        BlockState state = client.world.getBlockState(pos);
+    public static void showRenderAtPos(BlockPos pos, World world) {
+        BlockState state = world.getBlockState(pos);
         if (state.isAir()) {
             BlockState originalState = fakeWorld.getBlockState(pos);
             if (!originalState.isAir()) {
                 fakeWorld.setBlockState(pos, Blocks.AIR.getDefaultState());
-                client.world.setBlockState(pos, originalState, Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
+                world.setBlockState(pos, originalState, Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
             }
         }
     }

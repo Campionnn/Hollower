@@ -54,11 +54,6 @@ public class FakeChunkManager extends ChunkManager {
         return chunk == null ? this.blankChunk : chunk;
     }
 
-    @Nullable
-    public FakeChunk getChunkIfExists(int chunkX, int chunkZ) {
-        return this.chunks.get(chunkX, chunkZ);
-    }
-
     public void loadChunk(int chunkX, int chunkZ) {
         FakeChunk chunk = new FakeChunk(this.world, new ChunkPos(chunkX, chunkZ));
         this.chunks.set(chunkX, chunkZ, chunk);
