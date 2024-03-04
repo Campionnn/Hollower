@@ -97,11 +97,10 @@ public class FakeChunkManager extends ChunkManager {
             }
             this.chunks = newChunkMap;
         }
-
     }
 
     private static int getChunkMapRadius(int loadDistance) {
-        return Math.max(2, loadDistance) + 3;
+        return Math.max(2, loadDistance);
     }
 
     private static final class FakeChunkMap {
