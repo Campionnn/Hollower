@@ -78,6 +78,14 @@ public class FakeChunkManager extends ChunkManager {
         this.chunks.centerChunkZ = z;
     }
 
+    public ChunkPos getChunkMapCenter() {
+        return new ChunkPos(this.chunks.centerChunkX, this.chunks.centerChunkZ);
+    }
+
+    public int getRadius() {
+        return this.chunks.radius;
+    }
+
     public void updateLoadDistance(int loadDistance) {
         int i = this.chunks.radius;
         int j = getChunkMapRadius(loadDistance);

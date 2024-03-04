@@ -8,6 +8,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.WorldChunk;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RenderTweaks {
     public static final int PASSTHROUGH = 1024;
@@ -45,47 +52,97 @@ public class RenderTweaks {
     }
 
     public static void reloadSelectiveInternal() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.world == null) return;
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null) return;
 
         if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
             for (BlockPos entry : Hollower.renderBlacklist.values()) {
-                if (!Hollower.renderBlacklistCache.containsKey(entry.asLong())) {
-                    updateSelectiveAtPos(entry);
-                }
+                hideRenderAtPos(entry, client);
             }
         }
         else {
-            for (BlockPos entry : Hollower.renderBlacklistCache.values()) {
-                updateSelectiveAtPos(entry);
+            for (BlockPos entry : Hollower.renderBlacklist.values()) {
+                showRenderAtPos(entry, client);
             }
-            Hollower.renderBlacklistCache.clear();
         }
     }
 
-    public static void updateSelectiveAtPos(BlockPos pos) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.world == null) return;
-        BlockState state = mc.world.getBlockState(pos);
-        if (RenderTweaks.shouldHideBlock(pos)) {
-            if (!state.isAir()) {
-                mc.world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
-                setFakeBlockState(pos, state);
-                Hollower.renderBlacklistCache.put(pos.asLong(), pos);
-            }
-        } else {
-            if (state.isAir()) {
-                BlockState originalState = fakeWorld.getBlockState(pos);
-                if (!originalState.isAir()) {
-                    fakeWorld.setBlockState(pos, Blocks.AIR.getDefaultState());
-                    mc.world.setBlockState(pos, originalState, Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
-                    Hollower.renderBlacklistCache.remove(pos.asLong());
-                }
+    public static void hideRenderAtPos(BlockPos pos, MinecraftClient client) {
+        BlockState state = client.world.getBlockState(pos);
+        if (!state.isAir()) {
+            client.world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
+            setFakeBlockState(pos, state);
+        }
+    }
+
+    public static void showRenderAtPos(BlockPos pos, MinecraftClient client) {
+        BlockState state = client.world.getBlockState(pos);
+        if (state.isAir()) {
+            BlockState originalState = fakeWorld.getBlockState(pos);
+            if (!originalState.isAir()) {
+                fakeWorld.setBlockState(pos, Blocks.AIR.getDefaultState());
+                client.world.setBlockState(pos, originalState, Block.NOTIFY_ALL | Block.FORCE_STATE | PASSTHROUGH);
             }
         }
     }
 
     public static void setFakeBlockState(BlockPos pos, BlockState state) {
         fakeWorld.setBlockState(pos, state, 0);
+    }
+
+    public static void findAndAddBlocks(ConcurrentHashMap<Long, BlockPos> renderBlacklist, ConcurrentHashMap<Integer, String> renderBlacklistID, ConcurrentHashMap<Long, ChunkPos> renderBlacklistCacheChunk) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        World world = client.world;
+        ChunkPos center = fakeWorld.getChunkManager().getChunkMapCenter();
+        int radius = fakeWorld.getChunkManager().getRadius();
+        if (world == null) return;
+        for (int cx = center.x - radius; cx <= center.x + radius; cx++) {
+            for (int cz = center.z - radius; cz <= center.z + radius; cz++) {
+                WorldChunk chunk = (WorldChunk) world.getChunkManager().getChunk(cx, cz, ChunkStatus.FULL, false);
+                if (chunk == null) continue;
+                ChunkPos chunkPos = chunk.getPos();
+                processSections(renderBlacklist, renderBlacklistID, world, chunk, chunkPos);
+                renderBlacklistCacheChunk.put(chunkPos.toLong(), chunkPos);
+            }
+        }
+    }
+
+    public static void findAndAddBlocks() {
+        findAndAddBlocks(Hollower.renderBlacklist, Hollower.renderBlacklistID, Hollower.renderBlacklistChunk);
+    }
+
+    public static void findAndAddBlocksChunk(int cx, int cz, ConcurrentHashMap<Long, BlockPos> renderBlacklist, ConcurrentHashMap<Integer, String> renderBlacklistID, ConcurrentHashMap<Long, ChunkPos> renderBlacklistCacheChunk) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        World world = client.world;
+        if (world == null) return;
+        WorldChunk chunk = (WorldChunk) world.getChunkManager().getChunk(cx, cz, ChunkStatus.FULL, false);
+        if (chunk == null) return;
+        ChunkPos chunkPos = chunk.getPos();
+        processSections(renderBlacklist, renderBlacklistID, world, chunk, chunkPos);
+        renderBlacklistCacheChunk.put(chunkPos.toLong(), chunkPos);
+    }
+
+    public static void findAndAddBlocksChunk(int cx, int cz) {
+        findAndAddBlocksChunk(cx, cz, Hollower.renderBlacklist, Hollower.renderBlacklistID, Hollower.renderBlacklistChunk);
+    }
+
+    private static void processSections(ConcurrentHashMap<Long, BlockPos> renderBlacklist, ConcurrentHashMap<Integer, String> renderBlacklistID, World world, WorldChunk chunk, ChunkPos chunkPos) {
+        ChunkSection[] sections = chunk.getSectionArray();
+        for (int i = 0; i < sections.length; i++) {
+            ChunkSection section = sections[i];
+            if (section.isEmpty()) continue;
+            int startY = world.sectionIndexToCoord(i) << 4;
+            for (int x = 0; x < 16; x++) {
+                for (int y = 0; y < 16; y++) {
+                    for (int z = 0; z < 16; z++) {
+                        BlockPos pos = new BlockPos(x + chunkPos.getStartX(), y + startY, z + chunkPos.getStartZ());
+                        BlockState state = world.getBlockState(pos);
+                        if (!state.isAir() && renderBlacklistID.containsKey(state.getBlock().getTranslationKey().hashCode())) {
+                            renderBlacklist.put(pos.asLong(), pos);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
