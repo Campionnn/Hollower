@@ -13,12 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinWorld {
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("HEAD"), cancellable = true)
     private void setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth, CallbackInfoReturnable<Boolean> ci) {
-        if (RenderTweaks.shouldHideBlock(pos)) {
-            if ((flags & RenderTweaks.PASSTHROUGH) != 0) {
-                return;
-            }
-            RenderTweaks.setFakeBlockState(pos, state);
-            ci.setReturnValue(false);
+        if ((flags & RenderTweaks.PASSTHROUGH) != 0) {
+            return;
         }
+        RenderTweaks.setFakeBlockState(pos, state);
+        ci.setReturnValue(false);
     }
 }
