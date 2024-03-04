@@ -7,10 +7,10 @@ import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +49,7 @@ public class Hollower implements ClientModInitializer {
         keysToggle.put(toggleRenderKey, false);
     }
     public static ConcurrentHashMap<Long, ConcurrentHashMap<Long, BlockPos>> renderBlacklist = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, BlockState> renderBlacklistState = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Integer, String> renderBlacklistID = new ConcurrentHashMap<>();
 
     @Override
@@ -75,14 +76,13 @@ public class Hollower implements ClientModInitializer {
         }
         if (keysToggle.containsKey(key) && action == GLFW.GLFW_PRESS) {
             keysToggle.put(key, !keysToggle.get(key));
-            assert client.player != null;
-            client.player.sendMessage(Text.of("Toggled render to " + Hollower.keysToggle.get(Hollower.toggleRenderKey)), false);
             if (key == toggleRenderKey) {
-                RenderTweaks.reloadSelective();
+                client.player.sendMessage(Text.of("Toggled render to " + Hollower.keysToggle.get(Hollower.toggleRenderKey)), false);
+                RenderTweaks.reloadRender();
             }
             return;
         }
-        if (key == GLFW.GLFW_KEY_SEMICOLON) {
+        if (key == GLFW.GLFW_KEY_EQUAL) {
             if (action == GLFW.GLFW_PRESS) {
                 String block = "block.minecraft.redstone_ore";
                 renderBlacklistID.put(block.hashCode(), block);
@@ -98,15 +98,17 @@ public class Hollower implements ClientModInitializer {
                 renderBlacklistID.put(block.hashCode(), block);
                 block = "block.minecraft.emerald_ore";
                 renderBlacklistID.put(block.hashCode(), block);
-                if (keysToggle.get(toggleRenderKey)) {
-                    RenderTweaks.reloadSelective();
-                }
             }
         }
-        if (key == GLFW.GLFW_KEY_APOSTROPHE) {
+        if (key == GLFW.GLFW_KEY_MINUS) {
+            if (action == GLFW.GLFW_PRESS) {
+                renderBlacklistID.clear();
+            }
+        }
+        if (key == GLFW.GLFW_KEY_SEMICOLON) {
             if (action == GLFW.GLFW_PRESS) {
                 if (keysToggle.get(toggleRenderKey)) {
-                    RenderTweaks.reloadSelective();
+                    RenderTweaks.refreshRender();
                 }
             }
         }

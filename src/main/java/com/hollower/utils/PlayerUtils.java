@@ -1,8 +1,6 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
-import com.hollower.tweaks.RenderTweaks;
-import com.hollower.world.FakeWorld;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -65,8 +63,9 @@ public class PlayerUtils implements AttackBlockCallback {
                 return;
             }
             else if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
-                FakeWorld fakeWorld = RenderTweaks.getFakeWorld();
-                if (!fakeWorld.getBlockState(pos.offset(Direction.UP)).isAir() || !fakeWorld.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
+                long pos1 = pos.offset(Direction.UP).asLong();
+                long pos2 = pos.offset(Direction.UP).offset(Direction.UP).asLong();
+                if (Hollower.renderBlacklistState.containsKey(pos1) || Hollower.renderBlacklistState.containsKey(pos2)) {
                     client.player.sendMessage(Text.of("§cCannot teleport to that location due to unrendered blocks"), false);
                     return;
                 }
