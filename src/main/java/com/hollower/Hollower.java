@@ -7,6 +7,8 @@ import me.shedaniel.clothconfig2.api.*;
 import me.shedaniel.math.Color;
 import net.fabricmc.api.ClientModInitializer;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.minecraft.block.BlockState;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+@Environment(EnvType.CLIENT)
 public class Hollower implements ClientModInitializer {
     public static final String MOD_ID = "hollower";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);

@@ -3,6 +3,8 @@ package com.hollower.utils;
 import com.hollower.Hollower;
 import me.shedaniel.math.Color;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
@@ -13,6 +15,7 @@ import org.joml.Quaternionf;
 
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public class RenderUtils {
     static Tessellator tessellator = Tessellator.getInstance();
     static BufferBuilder buffer = tessellator.getBuffer();

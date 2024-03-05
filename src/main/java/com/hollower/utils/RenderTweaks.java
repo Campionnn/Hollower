@@ -1,6 +1,8 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -14,6 +16,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Environment(EnvType.CLIENT)
 public class RenderTweaks {
     public static final int PASSTHROUGH = 1024;
     public static int renderDistance = 16;

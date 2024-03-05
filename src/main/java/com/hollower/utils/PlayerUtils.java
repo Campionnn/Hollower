@@ -1,6 +1,8 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
@@ -16,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
+@Environment(EnvType.CLIENT)
 public class PlayerUtils implements AttackBlockCallback {
     private static final MinecraftClient client = MinecraftClient.getInstance();
 

@@ -1,6 +1,8 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.util.hit.BlockHitResult;
@@ -10,6 +12,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public class RouteUtils {
     public static void addPosition(BlockPos pos) {
         if (pos == null) return;
