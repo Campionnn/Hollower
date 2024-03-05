@@ -1,25 +1,29 @@
 package com.hollower.mixin;
 
 import com.hollower.Hollower;
-import com.hollower.tweaks.RenderTweaks;
+import com.hollower.utils.RenderTweaks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class MixinClientPlayNetworkHandler {
     @Shadow
     private ClientWorld world;
+    @Final
+    @Shadow
+    private MinecraftClient client;
 
     @Shadow
     private int chunkLoadDistance;
@@ -29,7 +33,7 @@ public abstract class MixinClientPlayNetworkHandler {
         RenderTweaks.renderDistance = chunkLoadDistance;
         Hollower.renderBlacklist.clear();
         Hollower.renderBlacklistState.clear();
-        Hollower.renderBlacklistID.clear();
+        Hollower.window = client.getWindow().getHandle();
     }
 
     @Inject(method = "onChunkData", at=@At("RETURN"))
@@ -37,7 +41,7 @@ public abstract class MixinClientPlayNetworkHandler {
         int cx = packet.getX();
         int cz = packet.getZ();
 
-        if (!Hollower.keysToggle.get(Hollower.toggleRenderKey)) return;
+        if (!Hollower.renderToggle) return;
         WorldChunk worldChunk = this.world.getChunkManager().getWorldChunk(cx, cz);
         if (worldChunk == null) return;
 
@@ -45,8 +49,8 @@ public abstract class MixinClientPlayNetworkHandler {
         if (!Hollower.renderBlacklist.containsKey(chunkHash)) {
             Hollower.renderBlacklist.put(chunkHash, new ConcurrentHashMap<>());
         }
-        RenderTweaks.findAndAddBlocksChunk(cx, cz);
-        RenderTweaks.hideAllBlocksChunk(cx, cz);
+        RenderTweaks.findBlocksChunk(cx, cz);
+        RenderTweaks.hideBlocksChunk(cx, cz);
     }
 
     @Inject(method = "onChunkLoadDistance",at=@At("RETURN"))

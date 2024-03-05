@@ -1,6 +1,6 @@
 package com.hollower.mixin;
 
-import com.hollower.tweaks.RenderTweaks;
+import com.hollower.utils.RenderTweaks;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -14,10 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinWorld {
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("HEAD"), cancellable = true)
     private void setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth, CallbackInfoReturnable<Boolean> ci) {
-        if (RenderTweaks.shouldHideBlock(new ChunkPos(pos).toLong(), pos.asLong())) {
-            if ((flags & RenderTweaks.PASSTHROUGH) != 0) {
-                return;
-            }
+        if ((flags & RenderTweaks.PASSTHROUGH) != 0) {
+            return;
+        }
+        ChunkPos chunk = new ChunkPos(pos);
+        if (RenderTweaks.shouldHideBlock(chunk.toLong(), pos.subtract(chunk.getStartPos()).asLong())) {
             RenderTweaks.setFakeBlockState(pos, state);
         }
         ci.setReturnValue(false);

@@ -1,4 +1,4 @@
-package com.hollower.tweaks;
+package com.hollower.utils;
 
 import com.hollower.Hollower;
 import net.minecraft.block.Block;
@@ -20,7 +20,7 @@ public class RenderTweaks {
     public static ChunkPos center;
 
     public static boolean shouldHideBlock(long chunkHash, long blockHash) {
-        if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
+        if (Hollower.renderToggle) {
             return Hollower.renderBlacklist.get(chunkHash).containsKey(blockHash);
         }
         return false;
@@ -31,9 +31,9 @@ public class RenderTweaks {
     }
 
     public static void refreshRender() {
-        if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
-            showAllBlocks();
-            hideAllBlocks();
+        if (Hollower.renderToggle) {
+            showBlocks();
+            hideBlocks();
         }
         else {
             Hollower.renderBlacklist.clear();
@@ -42,37 +42,36 @@ public class RenderTweaks {
     }
 
     public static void reloadRenderInterval() {
-        if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
-            hideAllBlocks();
+        if (Hollower.renderToggle) {
+            hideBlocks();
         }
         else {
-            showAllBlocks();
+            showBlocks();
         }
-
     }
 
-    private static void hideAllBlocks() {
-        RenderTweaks.findAndAddBlocks();
+    private static void hideBlocks() {
+        RenderTweaks.findBlocks();
         for (Map.Entry<Long, ConcurrentHashMap<Long, BlockPos>> entry : Hollower.renderBlacklist.entrySet()) {
             ChunkPos chunkPos = new ChunkPos(entry.getKey());
-            hideAllBlocksChunk(chunkPos.x, chunkPos.z);
+            hideBlocksChunk(chunkPos.x, chunkPos.z);
         }
     }
 
-    public static void hideAllBlocksChunk(int cx, int cz) {
+    public static void hideBlocksChunk(int cx, int cz) {
         World world = MinecraftClient.getInstance().world;
         if (world != null) {
             WorldChunk chunk = world.getChunk(cx, cz);
             ConcurrentHashMap<Long, BlockPos> blocks = Hollower.renderBlacklist.get(chunkToLong(cx, cz));
             if (blocks != null) {
                 for (BlockPos pos : blocks.values()) {
-                    hideRenderAtPos(chunk, pos, world);
+                    hideBlockAtPos(chunk, pos, world);
                 }
             }
         }
     }
 
-    public static void hideRenderAtPos(WorldChunk chunk, BlockPos pos, World world) {
+    public static void hideBlockAtPos(WorldChunk chunk, BlockPos pos, World world) {
         BlockPos realPos = getRealPos(chunk.getPos(), pos);
         BlockState state = chunk.getBlockState(realPos);
         if (!state.isAir()) {
@@ -81,20 +80,20 @@ public class RenderTweaks {
         }
     }
 
-    private static void showAllBlocks() {
+    private static void showBlocks() {
         World world = MinecraftClient.getInstance().world;
         if (world != null) {
             for (Map.Entry<Long, ConcurrentHashMap<Long, BlockPos>> entry : Hollower.renderBlacklist.entrySet()) {
                 ChunkPos chunkPos = new ChunkPos(entry.getKey());
                 ConcurrentHashMap<Long, BlockPos> chunk = entry.getValue();
                 for (BlockPos pos : chunk.values()) {
-                    showRenderAtPos(chunkPos, pos, world);
+                    showBlockAtPos(chunkPos, pos, world);
                 }
             }
         }
     }
 
-    public static void showRenderAtPos(ChunkPos chunkPos, BlockPos pos, World world) {
+    public static void showBlockAtPos(ChunkPos chunkPos, BlockPos pos, World world) {
         BlockPos realPos = getRealPos(chunkPos, pos);
         BlockState state = world.getBlockState(realPos);
         if (!state.isAir()) return;
@@ -121,39 +120,39 @@ public class RenderTweaks {
         return Hollower.renderBlacklistState.get(pos.asLong());
     }
 
-    public static void findAndAddBlocks(ConcurrentHashMap<Long, ConcurrentHashMap<Long, BlockPos>> renderBlacklist) {
-        for (int cx = center.x - renderDistance; cx <= center.x + renderDistance; cx++) {
-            for (int cz = center.z - renderDistance; cz <= center.z + renderDistance; cz++) {
-                if (Math.sqrt(Math.pow(cx - center.x, 2) + Math.pow(cz - center.z, 2)) < renderDistance+1) {
-                    long chunkHash = ChunkPos.toLong(cx, cz);
-                    if (!renderBlacklist.containsKey(chunkHash)) {
-                        renderBlacklist.put(chunkHash, new ConcurrentHashMap<>());
-                    }
-                    findAndAddBlocksChunk(cx, cz);
+    public static void findBlocks(ConcurrentHashMap<Long, ConcurrentHashMap<Long, BlockPos>> renderBlacklist) {
+        for (int cx = center.x - (renderDistance+2); cx <= center.x + (renderDistance+2); cx++) {
+            for (int cz = center.z - (renderDistance+2); cz <= center.z + (renderDistance+2); cz++) {
+                long chunkHash = ChunkPos.toLong(cx, cz);
+                if (!renderBlacklist.containsKey(chunkHash)) {
+                    renderBlacklist.put(chunkHash, new ConcurrentHashMap<>());
                 }
+                findBlocksChunk(cx, cz);
             }
         }
     }
 
-    public static void findAndAddBlocks() {
-        findAndAddBlocks(Hollower.renderBlacklist);
+    public static void findBlocks() {
+        findBlocks(Hollower.renderBlacklist);
     }
 
-    public static void findAndAddBlocksChunk(int cx, int cz, ConcurrentHashMap<Long, BlockPos> renderBlacklistChunk, ConcurrentHashMap<Integer, String> renderBlacklistID) {
+    public static void findBlocksChunk(int cx, int cz, ConcurrentHashMap<Long, BlockPos> renderBlacklistChunk, ConcurrentHashMap<Integer, String> renderBlacklistID) {
         MinecraftClient client = MinecraftClient.getInstance();
         World world = client.world;
         if (world == null) return;
         WorldChunk chunk = world.getChunk(cx, cz);
         if (chunk == null || chunk.isEmpty()) return;
-        processSections(chunk, renderBlacklistChunk, renderBlacklistID);
+        findBlocksSections(chunk, renderBlacklistChunk, renderBlacklistID);
     }
 
-    public static void findAndAddBlocksChunk(int cx, int cz) {
-        findAndAddBlocksChunk(cx, cz, Hollower.renderBlacklist.get(ChunkPos.toLong(cx, cz)), Hollower.renderBlacklistID);
+    public static void findBlocksChunk(int cx, int cz) {
+        findBlocksChunk(cx, cz, Hollower.renderBlacklist.get(ChunkPos.toLong(cx, cz)), Hollower.renderBlacklistID);
     }
 
-    private static void processSections(WorldChunk chunk, ConcurrentHashMap<Long, BlockPos> renderBlacklistChunk, ConcurrentHashMap<Integer, String> renderBlacklistID) {
+    private static void findBlocksSections(WorldChunk chunk, ConcurrentHashMap<Long, BlockPos> renderBlacklistChunk, ConcurrentHashMap<Integer, String> renderBlacklistID) {
         ChunkSection[] sections = chunk.getSectionArray();
+        int startX = chunk.getPos().getStartX();
+        int startZ = chunk.getPos().getStartZ();
         for (int i = 0; i < sections.length; i++) {
             ChunkSection section = sections[i];
             if (section.isEmpty()) continue;
@@ -162,7 +161,8 @@ public class RenderTweaks {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         BlockPos pos = new BlockPos(x, y + startY, z);
-                        BlockState state = chunk.getBlockState(pos);
+                        BlockPos realPos = new BlockPos(startX + x, y + startY, startZ + z);
+                        BlockState state = chunk.getBlockState(realPos);
                         if (!state.isAir() && renderBlacklistID.containsKey(state.getBlock().getTranslationKey().hashCode())) {
                             renderBlacklistChunk.put(pos.asLong(), pos);
                         }
