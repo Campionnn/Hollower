@@ -123,7 +123,7 @@ public class Hollower implements ClientModInitializer {
                 .setKeySaveConsumer((value) -> configKey = value)
                 .build());
         general.addEntry(entryBuilder.startIntField(Text.of("Max Reach"), maxReach)
-                .setDefaultValue(20)
+                .setDefaultValue(25)
                 .setMin(1)
                 .setTooltip(Text.of("Max distance to raycast when creating, deleting, or selecting blocks for routes"))
                 .setSaveConsumer((value) -> maxReach = value)
