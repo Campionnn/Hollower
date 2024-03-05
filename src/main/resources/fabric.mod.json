@@ -8,10 +8,10 @@
 		"Campion"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/Campionnn/Hollower",
+		"sources": "https://github.com/Campionnn/Hollower"
 	},
-	"license": "MIT",
+	"license": "GNU Lesser General Public License v3",
 	"icon": "assets/hollower/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -23,6 +23,9 @@
 		],
 		"fabric-datagen": [
 
+		],
+		"modmenu": [
+			"com.hollower.ModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -32,9 +35,10 @@
 		"fabricloader": ">=0.15.6",
 		"minecraft": "~1.20.1",
 		"java": ">=17",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"cloth-config2": "*"
 	},
 	"suggests": {
-		"another-mod": "*"
+		"modmenu": "*"
 	}
 }
