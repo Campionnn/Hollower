@@ -1,6 +1,7 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import me.shedaniel.math.Color;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -10,7 +11,6 @@ import net.minecraft.util.math.*;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
-import java.awt.*;
 import java.util.List;
 
 public class RenderUtils {
@@ -106,7 +106,7 @@ public class RenderUtils {
      * @param thickness the thickness of the lines
      * @param depthTest whether to use depth testing when drawing the lines
      */
-    public static void highlightBlocks(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
+    public static void outlineBlocks(List<BlockPos> positions, Color color, float thickness, boolean depthTest) {
         if (positions.isEmpty()) return;
 
         correctView();
@@ -182,8 +182,8 @@ public class RenderUtils {
      * @param thickness the thickness of the block
      * @param depthTest whether to use depth testing when drawing the block
      */
-    public static void highlightBlocks(Color color, float thickness, boolean depthTest) {
-        highlightBlocks(Hollower.positions, color, thickness, depthTest);
+    public static void outlineBlocks(Color color, float thickness, boolean depthTest) {
+        outlineBlocks(Hollower.positions, color, thickness, depthTest);
     }
 
     /**
@@ -267,7 +267,7 @@ public class RenderUtils {
      *
      * @param positions the positions to render the order of
      */
-    public static void renderOrder(List<BlockPos> positions) {
+    public static void renderOrder(List<BlockPos> positions, float scale) {
         if (positions.isEmpty()) return;
 
         TextRenderer textRenderer = client.textRenderer;
@@ -283,11 +283,11 @@ public class RenderUtils {
             matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
             matrixStack.translate(pos.getX()+0.5, pos.getY()+1.5, pos.getZ()+0.5);
             matrixStack.multiply(camera.getRotation());
-            matrixStack.scale(-0.04F, -0.04f, 0.04f);
+            matrixStack.scale(-scale, -scale, scale);
 
             Matrix4f positionMatrix = matrixStack.peek().getPositionMatrix();
             VertexConsumerProvider consumers = client.getBufferBuilders().getOutlineVertexConsumers();
-            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, new Color(255, 255, 255).getRGB(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, new Color(0, 0, 0, 70).getRGB(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, Color.ofRGB(255, 255, 255).getColor(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, Color.ofRGBA(0, 0, 0, 70).getColor(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
             matrixStack.pop();
         }
@@ -296,7 +296,7 @@ public class RenderUtils {
     /**
      * Renders the order of Hollower.positions above them.
      */
-    public static void renderOrder() {
-        renderOrder(Hollower.positions);
+    public static void renderOrder(float scale) {
+        renderOrder(Hollower.positions, scale);
     }
 }
