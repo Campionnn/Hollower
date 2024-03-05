@@ -3,6 +3,7 @@ package com.hollower.utils;
 import com.hollower.Hollower;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
@@ -62,7 +63,7 @@ public class PlayerUtils implements AttackBlockCallback {
                 client.player.sendMessage(Text.of("§cCannot teleport to that location"), false);
                 return;
             }
-            else if (Hollower.keysToggle.get(Hollower.toggleRenderKey)) {
+            else if (Hollower.renderToggle) {
                 long pos1 = pos.offset(Direction.UP).asLong();
                 long pos2 = pos.offset(Direction.UP).offset(Direction.UP).asLong();
                 if (Hollower.renderBlacklistState.containsKey(pos1) || Hollower.renderBlacklistState.containsKey(pos2)) {
@@ -71,7 +72,7 @@ public class PlayerUtils implements AttackBlockCallback {
                 }
             }
             BlockPos teleportPos = pos.offset(Direction.UP);
-            Hollower.lastTeleportPos = teleportPos;
+            Hollower.lastCommand = "Teleported ";
             client.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
             client.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
         }

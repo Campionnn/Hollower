@@ -23,13 +23,13 @@ public abstract class MixinMouse {
         if (client.getWindow().getHandle() != window) return;
         if (PlayerUtils.isHoldingTool()) {
             int amount = vertical > 0 ? 1 : -1;
-            if (Hollower.keysHold.get(Hollower.nudgeKey) && Hollower.selected != null) {
+            if (Hollower.isKeyPressed(Hollower.nudgeKey) && Hollower.selected != null) {
                 int index = Hollower.positions.indexOf(Hollower.selected);
                 Hollower.selected = Hollower.selected.offset(PlayerUtils.getClosestLookingDirection(), amount);
                 Hollower.positions.set(index, Hollower.selected);
                 ci.cancel();
             }
-            if (Hollower.keysHold.get(Hollower.swapOrderKey)) {
+            if (Hollower.isKeyPressed(Hollower.swapOrderKey) && Hollower.positions.size() > 1) {
                 if (amount == -1) {
                     BlockPos last = Hollower.positions.remove(Hollower.positions.size() - 1);
                     Hollower.positions.add(0, last);

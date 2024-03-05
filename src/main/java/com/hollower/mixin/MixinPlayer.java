@@ -4,6 +4,7 @@ import com.hollower.Hollower;
 import com.hollower.utils.PlayerUtils;
 import com.hollower.utils.RouteUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.InputUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +30,7 @@ public abstract class MixinPlayer {
         if (PlayerUtils.isHoldingTool()) {
             // prevent spam if the use key is held down
             if (instance.world.getTime() - Hollower.lastToolUseTick > 2) {
-                if (Hollower.keysHold.get(Hollower.etherwarpKey)) {
+                if (Hollower.isKeyPressed(Hollower.etherwarpKey)) {
                     PlayerUtils.etherwarp();
                 }
                 else {
@@ -44,7 +45,7 @@ public abstract class MixinPlayer {
     @Inject(at = @At("HEAD"), method = "doItemPick", cancellable = true)
     private void doItemPick(CallbackInfo ci) {
         if (PlayerUtils.isHoldingTool()) {
-            if (Hollower.keysHold.get(Hollower.swapOrderKey)) {
+            if (Hollower.isKeyPressed(Hollower.swapOrderKey)) {
                 RouteUtils.swapPositions(RouteUtils.getNodeRaycast());
             }
             else {
