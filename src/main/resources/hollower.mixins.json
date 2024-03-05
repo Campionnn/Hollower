@@ -9,7 +9,7 @@
   },
   "client": [
     "MixinBackgroundRenderer",
-    "MixinChatScreen",
+    "MixinChatHud",
     "MixinClientPlayNetworkHandler",
     "MixinIntegratedServerLoader",
     "MixinKeyboard",
