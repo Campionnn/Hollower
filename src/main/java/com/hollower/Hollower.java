@@ -15,6 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -47,7 +48,9 @@ public class Hollower implements ClientModInitializer {
     public static InputUtil.Key swapOrderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_ALT, 0);
     public static InputUtil.Key etherwarpKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_SHIFT, 0);
     public static InputUtil.Key toggleRenderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_X, 0);
+    public static InputUtil.Key noClipKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_N, 0);
     public static boolean renderToggle = false;
+    public static boolean noClip = false;
     public static boolean hideRuby = false;
     public static boolean hideTopaz = false;
     public static boolean hideSapphire = false;
@@ -93,11 +96,11 @@ public class Hollower implements ClientModInitializer {
     public static void onKeyEvent(int key, int action) {
         if (client.world == null && client.player == null) return;
         if (action == GLFW.GLFW_PRESS) {
-            if (key == configKey.getCode()) {
+            if (isKeyPressed(configKey)) {
                 client.setScreen(createConfigBuilder().build());
                 return;
             }
-            if (key == toggleRenderKey.getCode()) {
+            if (isKeyPressed(toggleRenderKey)) {
                 renderToggle = !renderToggle;
                 client.player.sendMessage(Text.of("Toggled render to " + renderToggle), false);
                 RenderTweaks.reloadRender();
@@ -107,7 +110,7 @@ public class Hollower implements ClientModInitializer {
     }
 
     public static boolean isKeyPressed(InputUtil.Key key) {
-        return InputUtil.isKeyPressed(window, key.getCode());
+        return InputUtil.isKeyPressed(window, key.getCode()) && client.currentScreen == null;
     }
 
     public static ConfigBuilder createConfigBuilder() {
