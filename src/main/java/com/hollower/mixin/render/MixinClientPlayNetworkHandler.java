@@ -1,4 +1,4 @@
-package com.hollower.mixin;
+package com.hollower.mixin.render;
 
 import com.hollower.Hollower;
 import com.hollower.utils.RenderTweaks;

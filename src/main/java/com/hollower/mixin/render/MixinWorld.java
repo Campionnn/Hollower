@@ -1,4 +1,4 @@
-package com.hollower.mixin;
+package com.hollower.mixin.render;
 
 import com.hollower.utils.RenderTweaks;
 import net.fabricmc.api.EnvType;

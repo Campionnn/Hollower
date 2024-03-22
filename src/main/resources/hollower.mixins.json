@@ -11,11 +11,10 @@
     "MixinBackgroundRenderer",
     "MixinChatHud",
     "MixinClient",
-    "MixinClientPlayNetworkHandler",
     "MixinIntegratedServerLoader",
     "MixinKeyboard",
     "MixinMouse",
-    "MixinPlayer",
-    "MixinWorld"
+    "render.MixinClientPlayNetworkHandler",
+    "render.MixinWorld"
   ]
 }
