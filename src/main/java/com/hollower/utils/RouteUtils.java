@@ -49,6 +49,15 @@ public class RouteUtils {
         Hollower.selected = pos;
     }
 
+    public static void nudgePosition(BlockPos pos, int amount) {
+        if (Hollower.selected == null) return;
+
+        int indexSelected = Hollower.positions.indexOf(pos);
+        if (indexSelected == -1) return;
+        Hollower.selected = pos.offset(PlayerUtils.getClosestLookingDirection(), amount);
+        Hollower.positions.set(indexSelected, Hollower.selected);
+    }
+
     /**
      * Raycasts to the given positions using camera and returns the position of the closest block hit.
      *

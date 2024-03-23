@@ -2,6 +2,7 @@ package com.hollower.mixin;
 
 import com.hollower.Hollower;
 import com.hollower.utils.PlayerUtils;
+import com.hollower.utils.RouteUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -26,10 +27,8 @@ public abstract class MixinMouse {
         if (client.getWindow().getHandle() != window) return;
         if (PlayerUtils.isHoldingTool()) {
             int amount = vertical > 0 ? 1 : -1;
-            if (Hollower.isKeyPressed(Hollower.nudgeKey) && Hollower.selected != null) {
-                int index = Hollower.positions.indexOf(Hollower.selected);
-                Hollower.selected = Hollower.selected.offset(PlayerUtils.getClosestLookingDirection(), amount);
-                Hollower.positions.set(index, Hollower.selected);
+            if (Hollower.isKeyPressed(Hollower.nudgeKey)) {
+                RouteUtils.nudgePosition(Hollower.selected, amount);
                 ci.cancel();
             }
             if (Hollower.isKeyPressed(Hollower.swapOrderKey) && Hollower.positions.size() > 1) {
