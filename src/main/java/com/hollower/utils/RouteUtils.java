@@ -163,4 +163,53 @@ public class RouteUtils {
     public static float getDistance(BlockPos pos1, BlockPos pos2) {
         return (float) Math.sqrt(Math.pow(pos1.getX() - pos2.getX(), 2) + Math.pow(pos1.getY() - pos2.getY(), 2) + Math.pow(pos1.getZ() - pos2.getZ(), 2));
     }
+
+    public static void copyRouteToClipboard() {
+        StringBuilder route = new StringBuilder("[");
+        for (int i = 0; i < Hollower.positions.size(); i++) {
+            BlockPos pos = Hollower.positions.get(i);
+            route.append("{\"x\":").append(pos.getX()).append(",\"y\":").append(pos.getY()).append(",\"z\":").append(pos.getZ()).append(",\"r\":").append(0).append(",\"g\":").append(1).append(",\"b\":").append(0).append(",\"options\":{\"name\":\"").append(i + 1).append("\"}}");
+            if (i < Hollower.positions.size() - 1) {
+                route.append(",");
+            }
+        }
+        route.append("]");
+        Hollower.copyToClipboard(route.toString());
+        Hollower.sendChatMessage("Route copied to clipboard");
+    }
+
+    public static void importRouteFromClipboard() {
+        Hollower.positions.clear();
+        Hollower.selected = null;
+        try {
+            String route = Hollower.getClipboard();
+            String[] nodes = route.split("},");
+            for (String node : nodes) {
+                String[] parts = node.split(",");
+
+                int x = Integer.parseInt(parts[0].split(":")[1]);
+                int y = Integer.parseInt(parts[1].split(":")[1]);
+                int z = Integer.parseInt(parts[2].split(":")[1]);
+                Hollower.positions.add(new BlockPos(x, y, z));
+            }
+            Hollower.sendChatMessage("Route imported from clipboard");
+        } catch (Exception e) {
+            Hollower.sendChatMessage("§cFailed to import route from clipboard");
+        }
+    }
+
+    public static void clearRoute() {
+        Hollower.positions.clear();
+        Hollower.selected = null;
+        Hollower.sendChatMessage("Route cleared");
+    }
+
+    public static void setBlocksInRoute() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        for (BlockPos pos : Hollower.positions) {
+            Hollower.lastCommands.add("Changed");
+            client.getNetworkHandler().sendChatCommand("setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " minecraft:bedrock");
+        }
+        Hollower.sendChatMessage("Blocks set in route");
+    }
 }

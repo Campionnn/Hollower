@@ -63,19 +63,19 @@ public class PlayerUtils implements AttackBlockCallback {
         BlockPos pos = RouteUtils.getRaycast(61);
         if (pos != null) {
             if (!client.world.getBlockState(pos.offset(Direction.UP)).isAir() || !client.world.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
-                client.player.sendMessage(Text.of("§cCannot teleport to that location"), false);
+                Hollower.sendChatMessage("§cCannot teleport to that location");
                 return;
             }
             else if (Hollower.renderToggle) {
                 long pos1 = pos.offset(Direction.UP).asLong();
                 long pos2 = pos.offset(Direction.UP).offset(Direction.UP).asLong();
                 if (Hollower.renderBlacklistState.containsKey(pos1) || Hollower.renderBlacklistState.containsKey(pos2)) {
-                    client.player.sendMessage(Text.of("§cCannot teleport to that location due to unrendered blocks"), false);
+                    Hollower.sendChatMessage("§cCannot teleport to that location due to unrendered blocks");
                     return;
                 }
             }
             BlockPos teleportPos = pos.offset(Direction.UP);
-            Hollower.lastCommand = "Teleported ";
+            Hollower.lastCommands.add("Teleported");
             client.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
             client.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
         }

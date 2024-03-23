@@ -26,12 +26,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Hollower implements ClientModInitializer {
     public static final String MOD_ID = "hollower";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    static MinecraftClient client = MinecraftClient.getInstance();
+    public static MinecraftClient client = MinecraftClient.getInstance();
     public static long lastToolUseTick;
     public static List<BlockPos> positions = new ArrayList<>();
     public static int maxReach = 20;
     public static BlockPos selected;
-    public static String lastCommand;
+    public static ArrayList<String> lastCommands = new ArrayList<>();
     public static long window;
     public static ConcurrentHashMap<Long, ConcurrentHashMap<Long, BlockPos>> renderBlacklist = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Long, BlockState> renderBlacklistState = new ConcurrentHashMap<>();
@@ -87,6 +87,11 @@ public class Hollower implements ClientModInitializer {
         prevRenderBlacklistID.addAll(renderBlacklistID.values());
     }
 
+    public static void sendChatMessage(String message) {
+        if (client.player == null) return;
+        client.player.sendMessage(Text.of(message), false);
+    }
+
     public static void onKeyEvent(int action) {
         if (client.world == null && client.player == null) return;
         if (action == GLFW.GLFW_PRESS) {
@@ -96,8 +101,7 @@ public class Hollower implements ClientModInitializer {
             }
             if (isKeyPressed(toggleRenderKey)) {
                 renderToggle = !renderToggle;
-                if (client.player == null) return;
-                client.player.sendMessage(Text.of("Toggled render to " + renderToggle), false);
+                sendChatMessage("Render " + (renderToggle ? "enabled" : "disabled"));
                 RenderTweaks.reloadRender();
                 return;
             }
@@ -108,4 +112,11 @@ public class Hollower implements ClientModInitializer {
         return InputUtil.isKeyPressed(window, key.getCode()) && client.currentScreen == null;
     }
 
+    public static void copyToClipboard(String text) {
+        client.keyboard.setClipboard(text);
+    }
+
+    public static String getClipboard() {
+        return client.keyboard.getClipboard();
+    }
 }

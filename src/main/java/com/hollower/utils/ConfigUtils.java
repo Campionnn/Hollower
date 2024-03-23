@@ -25,6 +25,26 @@ public class ConfigUtils {
                 .setTooltip(Text.of("Key to open config menu"))
                 .setKeySaveConsumer((value) -> Hollower.configKey = value)
                 .build());
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Copy route to clipboard"), false)
+                .setDefaultValue(false)
+                .setTooltip(Text.of("Set this value to true then save and close config menu to copy route to clipboard"))
+                .setSaveConsumer((value) -> {if (value) RouteUtils.copyRouteToClipboard();})
+                .build());
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Import route from clipboard"), false)
+                .setDefaultValue(false)
+                .setTooltip(Text.of("Set this value to true then save and close config menu to import route from clipboard"))
+                .setSaveConsumer((value) -> {if (value) RouteUtils.importRouteFromClipboard();})
+                .build());
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Clear route"), false)
+                .setDefaultValue(false)
+                .setTooltip(Text.of("Set this value to true then save and close config menu to clear route"))
+                .setSaveConsumer((value) -> {if (value) RouteUtils.clearRoute();})
+                .build());
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Set blocks in route"), false)
+                .setDefaultValue(false)
+                .setTooltip(Text.of("Set this value to true then save and close config menu to set a bedrock block at each position in route"))
+                .setSaveConsumer((value) -> {if (value) RouteUtils.setBlocksInRoute();})
+                .build());
         general.addEntry(entryBuilder.startIntField(Text.of("Max Reach"), Hollower.maxReach)
                 .setDefaultValue(25)
                 .setMin(1)
