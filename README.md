@@ -41,6 +41,8 @@ Download the latest release from the [releases page](https://github.com/Campionn
     * This feature can be very intensive on Minecraft especially at high render distances
     * You will likely experience some stutters while crossing chunk borders because it has to process the newly loaded chunks
     * Because the blocks are only hidden client side, you will run into ghost blocks. I have tried to implement a feature for no clip, but it is a lot more complicated than I initially thought. You can use this [noclip mod](https://www.curseforge.com/minecraft/mc-mods/noclip) until I do this myself
+* Remove fog so you can see as far as your render distance
+* Disable experimental world settings warning when loading a world
 
 ### Planned/Work in Progress
 * Implementing no clip natively into the mod
@@ -49,4 +51,8 @@ Download the latest release from the [releases page](https://github.com/Campionn
 * Visualizing reachable gemstones from each node
 * Render a plane to visualize where the magma field starts (maybe not necessary)
 * Automatically create very optimized routes using given parameters similar to [seafoam](https://astanik.dev/seafoam/) but better (probably far future)
+* Highlight selected nodes in the route a different color for organization
+* Commands for route management
+* Keybind/command to set block below current position and add it to the route
+* Render a 9x9 chunk border around the center of the route to make sure all veins are within render distance
 * If you have any suggestions, feel free to open an issue or contact me on discord @campionn
