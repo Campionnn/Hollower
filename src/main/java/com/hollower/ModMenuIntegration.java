@@ -1,5 +1,6 @@
 package com.hollower;
 
+import com.hollower.utils.ConfigUtils;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.fabricmc.api.EnvType;
@@ -9,6 +10,6 @@ import net.fabricmc.api.Environment;
 public class ModMenuIntegration implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> Hollower.createConfigBuilder().build();
+        return parent -> ConfigUtils.createConfigBuilder().build();
     }
 }
