@@ -42,9 +42,9 @@ public class Hollower implements ClientModInitializer {
     public static InputUtil.Key swapOrderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_ALT, 0);
     public static InputUtil.Key etherwarpKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_SHIFT, 0);
     public static InputUtil.Key toggleRenderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_X, 0);
-    public static InputUtil.Key noClipKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_N, 0);
+//    public static InputUtil.Key noClipKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_N, 0);
     public static boolean renderToggle = false;
-    public static boolean noClip = false;
+//    public static boolean noClip = false;
     public static boolean hideRuby = false;
     public static boolean hideTopaz = false;
     public static boolean hideSapphire = false;
@@ -103,7 +103,6 @@ public class Hollower implements ClientModInitializer {
                 renderToggle = !renderToggle;
                 sendChatMessage("Render " + (renderToggle ? "enabled" : "disabled"));
                 RenderTweaks.reloadRender();
-                return;
             }
         }
     }

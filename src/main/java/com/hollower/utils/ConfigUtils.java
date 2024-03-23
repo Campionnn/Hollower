@@ -5,10 +5,13 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.math.Color;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
+@Environment(EnvType.CLIENT)
 public class ConfigUtils {
     public static ConfigBuilder createConfigBuilder() {
         ConfigBuilder builder = ConfigBuilder.create()
@@ -68,6 +71,17 @@ public class ConfigUtils {
                 .setTooltip(Text.of("Hold key to teleport on top of block you are looking at"))
                 .setKeySaveConsumer((value) -> Hollower.etherwarpKey = value)
                 .build());
+        general.addEntry(entryBuilder.startColorField(Text.of("Etherwarp Block Color"), Hollower.etherwarpBlockColor)
+                .setDefaultValue(0xFF00FF)
+                .setTooltip(Text.of("Color of block to teleport to when holding etherwarp key"))
+                .setSaveConsumer((value) -> Hollower.etherwarpBlockColor = Color.ofTransparent(value | (0x40 << 24)))
+                .build());
+        general.addEntry(entryBuilder.startIntField(Text.of("Etherwarp Range"), Hollower.etherwarpRange)
+                .setDefaultValue(61)
+                .setMin(1)
+                .setTooltip(Text.of("Max distance to teleport when holding etherwarp key"))
+                .setSaveConsumer((value) -> Hollower.etherwarpRange = value)
+                .build());
 
         ConfigCategory routeRender = builder.getOrCreateCategory(Text.of("Route Render"));
         routeRender.addEntry(entryBuilder.startColorField(Text.of("Route Line Color"), Hollower.routeLineColor)
@@ -96,17 +110,6 @@ public class ConfigUtils {
                 .setDefaultValue(0x0000FF)
                 .setTooltip(Text.of("Color of selected block in route"))
                 .setSaveConsumer((value) -> Hollower.selectBlockColor = Color.ofTransparent(value | (0x40 << 24)))
-                .build());
-        routeRender.addEntry(entryBuilder.startColorField(Text.of("Etherwarp Block Color"), Hollower.etherwarpBlockColor)
-                .setDefaultValue(0xFF00FF)
-                .setTooltip(Text.of("Color of block to teleport to when holding etherwarp key"))
-                .setSaveConsumer((value) -> Hollower.etherwarpBlockColor = Color.ofTransparent(value | (0x40 << 24)))
-                .build());
-        routeRender.addEntry(entryBuilder.startIntField(Text.of("Etherwarp Range"), Hollower.etherwarpRange)
-                .setDefaultValue(61)
-                .setMin(1)
-                .setTooltip(Text.of("Max distance to teleport when holding etherwarp key"))
-                .setSaveConsumer((value) -> Hollower.etherwarpRange = value)
                 .build());
         routeRender.addEntry(entryBuilder.startFloatField(Text.of("Order Scale"), Hollower.orderScale)
                 .setDefaultValue(0.04f)

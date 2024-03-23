@@ -49,11 +49,6 @@ public class RouteUtils {
         Hollower.selected = pos;
     }
 
-    public static void clearPositions() {
-        Hollower.positions.clear();
-        Hollower.selected = null;
-    }
-
     /**
      * Raycasts to the given positions using camera and returns the position of the closest block hit.
      *
