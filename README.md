@@ -7,9 +7,9 @@ This project was started due to the lack of mods for creating routes. It allows 
 
 ### Requirements
 * Minecraft Fabric 1.20.1 https://fabricmc.net/
-* Fabric API [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | [GitHub](https://github.com/FabricMC/fabric)
-* Cloth Config [CurseForge](https://www.curseforge.com/minecraft/mc-mods/cloth-config) | [GitHub](https://github.com/shedaniel/cloth-config)
-* noclip (recommended) [CurseForge](https://www.curseforge.com/minecraft/mc-mods/noclip) | [GitHub](https://github.com/andantet/noclip)
+* Fabric API [Modrinth](https://modrinth.com/mod/fabric-api) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | [GitHub](https://github.com/FabricMC/fabric)
+* Cloth Config [Modrinth](https://modrinth.com/mod/cloth-config) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/cloth-config) | [GitHub](https://github.com/shedaniel/cloth-config)
+* noclip (recommended) [Modrinth](https://modrinth.com/mod/noclip) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/noclip) | [GitHub](https://github.com/andantet/noclip)
 
 ### Download
 Download the latest release from the [releases page](https://github.com/Campionnn/Hollower/releases)
