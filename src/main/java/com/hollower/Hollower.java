@@ -96,6 +96,7 @@ public class Hollower implements ClientModInitializer {
             }
             if (isKeyPressed(toggleRenderKey)) {
                 renderToggle = !renderToggle;
+                if (client.player == null) return;
                 client.player.sendMessage(Text.of("Toggled render to " + renderToggle), false);
                 RenderTweaks.reloadRender();
                 return;

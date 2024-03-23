@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Environment(EnvType.CLIENT)
 @Mixin(Keyboard.class)
 public abstract class MixinKeyboard {
-    @Inject(at = @At("TAIL"), method = "onKey", cancellable = true)
+    @Inject(at = @At("TAIL"), method = "onKey")
     private void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
         Hollower.onKeyEvent(action);
     }
