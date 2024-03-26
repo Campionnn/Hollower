@@ -27,11 +27,11 @@ public abstract class MixinMouse {
         if (client.getWindow().getHandle() != window) return;
         if (PlayerUtils.isHoldingTool()) {
             int amount = vertical > 0 ? 1 : -1;
-            if (Hollower.isKeyPressed(Hollower.nudgeKey)) {
+            if (Hollower.isKeyPressed(Hollower.config.nudgeKey)) {
                 RouteUtils.nudgePosition(Hollower.selected, amount);
                 ci.cancel();
             }
-            if (Hollower.isKeyPressed(Hollower.swapOrderKey) && Hollower.positions.size() > 1) {
+            if (Hollower.isKeyPressed(Hollower.config.swapOrderKey) && Hollower.positions.size() > 1) {
                 if (amount == -1) {
                     BlockPos last = Hollower.positions.remove(Hollower.positions.size() - 1);
                     Hollower.positions.add(0, last);

@@ -1,7 +1,6 @@
 package com.hollower;
 
 import com.hollower.utils.*;
-import me.shedaniel.math.Color;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.api.EnvType;
@@ -27,9 +26,9 @@ public class Hollower implements ClientModInitializer {
     public static final String MOD_ID = "hollower";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static MinecraftClient client = MinecraftClient.getInstance();
+    public static HollowerConfig config = new HollowerConfig();
     public static long lastToolUseTick;
     public static List<BlockPos> positions = new ArrayList<>();
-    public static int maxReach = 20;
     public static BlockPos selected;
     public static ArrayList<String> lastCommands = new ArrayList<>();
     public static long window;
@@ -37,51 +36,21 @@ public class Hollower implements ClientModInitializer {
     public static ConcurrentHashMap<Long, BlockState> renderBlacklistState = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Integer, String> renderBlacklistID = new ConcurrentHashMap<>();
     public static ArrayList<String> prevRenderBlacklistID = new ArrayList<>();
-    public static InputUtil.Key configKey = InputUtil.fromKeyCode(GLFW.GLFW_KEY_C, 0);
-    public static InputUtil.Key nudgeKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_CONTROL, 0);
-    public static InputUtil.Key swapOrderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_ALT, 0);
-    public static InputUtil.Key etherwarpKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_LEFT_SHIFT, 0);
-    public static InputUtil.Key toggleRenderKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_X, 0);
-//    public static InputUtil.Key noClipKey = InputUtil.fromKeyCode(InputUtil.GLFW_KEY_N, 0);
     public static boolean renderToggle = false;
-//    public static boolean noClip = false;
-    public static boolean hideRuby = false;
-    public static boolean hideTopaz = false;
-    public static boolean hideSapphire = false;
-    public static boolean hideAmethyst = false;
-    public static boolean hideJade = false;
-    public static boolean hideMithril = false;
-    public static boolean hideAmber = false;
-    public static boolean hideCoal = false;
-    public static boolean hideIron = false;
-    public static boolean hideRedstone = false;
-    public static boolean hideGold = false;
-    public static boolean hideLapis = false;
-    public static boolean hideDiamond = false;
-    public static boolean hideEmerald = false;
-    public static boolean hideMiscBlocks = false;
-    public static Color routeLineColor = Color.ofRGBA(255, 0, 0, 255);
-    public static float routeLineWidth = 3.0f;
-    public static Color outlineBlockColor = Color.ofRGBA(0, 255, 0, 255);
-    public static float outlineBlockWidth = 2.0f;
-    public static Color selectBlockColor = Color.ofRGBA(0, 0, 255, 64);
-    public static Color etherwarpBlockColor = Color.ofRGBA(255, 0, 255, 64);
-    public static int etherwarpRange = 61;
-    public static float orderScale = 0.04f;
 
     @Override
     public void onInitializeClient() {
         AttackBlockCallback.EVENT.register(new PlayerUtils());
 
         WorldRenderEvents.LAST.register((context) -> {
-            RenderUtils.drawLines(routeLineColor, routeLineWidth, false);
-            RenderUtils.outlineBlocks(outlineBlockColor, outlineBlockWidth, false);
-            RenderUtils.selectBlock(selectBlockColor, false);
-            if (isKeyPressed(etherwarpKey) && PlayerUtils.isHoldingTool()) {
-                BlockPos etherwarpPos = RouteUtils.getRaycast(etherwarpRange);
-                RenderUtils.selectBlock(etherwarpPos, etherwarpBlockColor, false);
+            RenderUtils.drawLines(config.routeLineColor, config.routeLineWidth, false);
+            RenderUtils.outlineBlocks(config.outlineBlockColor, config.outlineBlockWidth, false);
+            RenderUtils.selectBlock(config.selectBlockColor, false);
+            if (isKeyPressed(config.etherwarpKey) && PlayerUtils.isHoldingTool()) {
+                BlockPos etherwarpPos = RouteUtils.getRaycast(config.etherwarpRange);
+                RenderUtils.selectBlock(etherwarpPos, config.etherwarpBlockColor, false);
             }
-            RenderUtils.renderOrder(orderScale);
+            RenderUtils.renderOrder(config.orderScale);
         });
 
         prevRenderBlacklistID.addAll(renderBlacklistID.values());
@@ -95,11 +64,11 @@ public class Hollower implements ClientModInitializer {
     public static void onKeyEvent(int action) {
         if (client.world == null && client.player == null) return;
         if (action == GLFW.GLFW_PRESS) {
-            if (isKeyPressed(configKey)) {
-                client.setScreen(ConfigUtils.createConfigBuilder().build());
+            if (isKeyPressed(config.configKey)) {
+                client.setScreen(ConfigUtils.createConfigBuilder().generateScreen(client.currentScreen));
                 return;
             }
-            if (isKeyPressed(toggleRenderKey)) {
+            if (isKeyPressed(config.toggleRenderKey)) {
                 renderToggle = !renderToggle;
                 sendChatMessage("Render " + (renderToggle ? "enabled" : "disabled"));
                 RenderTweaks.reloadRender();

@@ -127,7 +127,7 @@ public class RouteUtils {
      * @return the position of the closest block hit
      */
     public static BlockPos getNodeRaycast() {
-        return getNodeRaycast(Hollower.positions, Hollower.maxReach);
+        return getNodeRaycast(Hollower.positions, Hollower.config.maxReach);
     }
 
     /**
@@ -154,7 +154,7 @@ public class RouteUtils {
      * @return the position of the closest block hit
      */
     public static BlockPos getRaycast() {
-        return getRaycast(Hollower.maxReach);
+        return getRaycast(Hollower.config.maxReach);
     }
 
     /**

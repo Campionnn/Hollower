@@ -1,7 +1,6 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
-import me.shedaniel.math.Color;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -13,6 +12,7 @@ import net.minecraft.util.math.*;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
+import java.awt.*;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
@@ -290,7 +290,7 @@ public class RenderUtils {
 
             Matrix4f positionMatrix = matrixStack.peek().getPositionMatrix();
             VertexConsumerProvider consumers = client.getBufferBuilders().getOutlineVertexConsumers();
-            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, Color.ofRGB(255, 255, 255).getColor(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, Color.ofRGBA(0, 0, 0, 70).getColor(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, new Color(255, 255, 255).getRGB(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, new Color(0, 0, 0, 70).getRGB(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
             matrixStack.pop();
         }

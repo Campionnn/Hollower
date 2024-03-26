@@ -32,7 +32,7 @@ public abstract class MixinClient {
         if (PlayerUtils.isHoldingTool()) {
             // prevent spam if the use key is held down
             if (instance.world.getTime() - Hollower.lastToolUseTick > 2) {
-                if (Hollower.isKeyPressed(Hollower.etherwarpKey)) {
+                if (Hollower.isKeyPressed(Hollower.config.etherwarpKey)) {
                     PlayerUtils.etherwarp();
                 }
                 else {
@@ -47,7 +47,7 @@ public abstract class MixinClient {
     @Inject(at = @At("HEAD"), method = "doItemPick", cancellable = true)
     private void doItemPick(CallbackInfo ci) {
         if (PlayerUtils.isHoldingTool()) {
-            if (Hollower.isKeyPressed(Hollower.swapOrderKey)) {
+            if (Hollower.isKeyPressed(Hollower.config.swapOrderKey)) {
                 RouteUtils.swapPositions(RouteUtils.getNodeRaycast());
             }
             else {

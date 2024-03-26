@@ -1,207 +1,233 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.math.Color;
+import com.hollower.config.KeybindControllerBuilder;
+import dev.isxander.yacl3.api.*;
+import dev.isxander.yacl3.api.controller.StringControllerBuilder;
+import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class ConfigUtils {
-    public static ConfigBuilder createConfigBuilder() {
-        ConfigBuilder builder = ConfigBuilder.create()
-                .setParentScreen(null)
-                .setTitle(Text.of("Hollower Config Menu"))
-                .setTransparentBackground(true);
-
-        builder.setSavingRunnable(ConfigUtils::saveConfig);
-
-        ConfigCategory general = builder.getOrCreateCategory(Text.of("General"));
-        ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Config Key"), Hollower.configKey)
-                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_C, 0))
-                .setTooltip(Text.of("Key to open config menu"))
-                .setKeySaveConsumer((value) -> Hollower.configKey = value)
-                .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Copy route to clipboard"), false)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Set this value to true then save and close config menu to copy route to clipboard"))
-                .setSaveConsumer((value) -> {if (value) RouteUtils.copyRouteToClipboard();})
-                .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Import route from clipboard"), false)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Set this value to true then save and close config menu to import route from clipboard"))
-                .setSaveConsumer((value) -> {if (value) RouteUtils.importRouteFromClipboard();})
-                .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Clear route"), false)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Set this value to true then save and close config menu to clear route"))
-                .setSaveConsumer((value) -> {if (value) RouteUtils.clearRoute();})
-                .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Set blocks in route"), false)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Set this value to true then save and close config menu to set a bedrock block at each position in route"))
-                .setSaveConsumer((value) -> {if (value) RouteUtils.setBlocksInRoute();})
-                .build());
-        general.addEntry(entryBuilder.startIntField(Text.of("Max Reach"), Hollower.maxReach)
-                .setDefaultValue(25)
-                .setMin(1)
-                .setTooltip(Text.of("Max distance to raycast when creating, deleting, or selecting blocks for routes"))
-                .setSaveConsumer((value) -> Hollower.maxReach = value)
-                .build());
-        general.addEntry(entryBuilder.startTextDescription(Text.of("All hotkeys below only work when holding a wooden pickaxe")).build());
-        general.addEntry(entryBuilder.startTextDescription(Text.of("Creating, deleting, or selecting nodes can be changed in Minecraft controls\nthrough Attack/Destroy, Use Item/Place Block, and Pick Block respectively")).build());
-        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Nudge Key"), Hollower.nudgeKey)
-                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_CONTROL, 0))
-                .setTooltip(Text.of("Hold key while scrolling to nudge selected block in look direction"))
-                .setKeySaveConsumer((value) -> Hollower.nudgeKey = value)
-                .build());
-        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Swap Order Key"), Hollower.swapOrderKey)
-                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_ALT, 0))
-                .setTooltip(Text.of("Hold key while scrolling to rotate order of all blocks in route\nor hold key while selecting a new block to swap with currently selected block"))
-                .setKeySaveConsumer((value) -> Hollower.swapOrderKey = value)
-                .build());
-        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Etherwarp Key"), Hollower.etherwarpKey)
-                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_SHIFT, 0))
-                .setTooltip(Text.of("Hold key to teleport on top of block you are looking at"))
-                .setKeySaveConsumer((value) -> Hollower.etherwarpKey = value)
-                .build());
-        general.addEntry(entryBuilder.startColorField(Text.of("Etherwarp Block Color"), Hollower.etherwarpBlockColor)
-                .setDefaultValue(0xFF00FF)
-                .setTooltip(Text.of("Color of block to teleport to when holding etherwarp key"))
-                .setSaveConsumer((value) -> Hollower.etherwarpBlockColor = Color.ofTransparent(value | (0x40 << 24)))
-                .build());
-        general.addEntry(entryBuilder.startIntField(Text.of("Etherwarp Range"), Hollower.etherwarpRange)
-                .setDefaultValue(61)
-                .setMin(1)
-                .setTooltip(Text.of("Max distance to teleport when holding etherwarp key"))
-                .setSaveConsumer((value) -> Hollower.etherwarpRange = value)
-                .build());
-
-        ConfigCategory routeRender = builder.getOrCreateCategory(Text.of("Route Render"));
-        routeRender.addEntry(entryBuilder.startColorField(Text.of("Route Line Color"), Hollower.routeLineColor)
-                .setDefaultValue(Color.ofRGB(255, 0, 0).getColor() & 0x00ffffff)
-                .setTooltip(Text.of("Color of lines connecting nodes in route"))
-                .setSaveConsumer((value) -> Hollower.routeLineColor = Color.ofOpaque(value))
-                .build());
-        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Route Line Width"), Hollower.routeLineWidth)
-                .setDefaultValue(3.0f)
-                .setMin(0.0f)
-                .setTooltip(Text.of("Width of lines connecting nodes in route"))
-                .setSaveConsumer((value) -> Hollower.routeLineWidth = value)
-                .build());
-        routeRender.addEntry(entryBuilder.startColorField(Text.of("Outline Block Color"), Hollower.outlineBlockColor)
-                .setDefaultValue(Color.ofRGB(0, 255, 0).getColor() & 0x00ffffff)
-                .setTooltip(Text.of("Color of outline around blocks in route"))
-                .setSaveConsumer((value) -> Hollower.outlineBlockColor = Color.ofOpaque(value))
-                .build());
-        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Outline Block Width"), Hollower.outlineBlockWidth)
-                .setDefaultValue(2.0f)
-                .setMin(0.0f)
-                .setTooltip(Text.of("Width of outline around blocks in route"))
-                .setSaveConsumer((value) -> Hollower.outlineBlockWidth = value)
-                .build());
-        routeRender.addEntry(entryBuilder.startColorField(Text.of("Select Block Color"), Hollower.selectBlockColor)
-                .setDefaultValue(0x0000FF)
-                .setTooltip(Text.of("Color of selected block in route"))
-                .setSaveConsumer((value) -> Hollower.selectBlockColor = Color.ofTransparent(value | (0x40 << 24)))
-                .build());
-        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Order Scale"), Hollower.orderScale)
-                .setDefaultValue(0.04f)
-                .setTooltip(Text.of("Scale of order text above blocks in route"))
-                .setMin(0.0f)
-                .setSaveConsumer((value) -> Hollower.orderScale = value)
-                .build());
-
-        ConfigCategory selectiveRender = builder.getOrCreateCategory(Text.of("Selective Render"));
-        selectiveRender.addEntry(entryBuilder.startKeyCodeField(Text.of("Toggle Selective Render Key"), Hollower.toggleRenderKey)
-                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_X, 0))
-                .setTooltip(Text.of("Key to toggle selective render"))
-                .setKeySaveConsumer((value) -> Hollower.toggleRenderKey = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startTextDescription(Text.of("Hide or show specific blocks from rendering\nEach additional block hidden will cause some lag when crossing chunk borders")).build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Ruby"), Hollower.hideRuby)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Ruby Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideRuby = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Topaz"), Hollower.hideTopaz)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Topaz Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideTopaz = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Sapphire"), Hollower.hideSapphire)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Sapphire Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideSapphire = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Amethyst"), Hollower.hideAmethyst)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Amethyst Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideAmethyst = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Jade"), Hollower.hideJade)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Jade Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideJade = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Amber"), Hollower.hideAmber)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Amber Gemstones"))
-                .setSaveConsumer((value) -> Hollower.hideAmber = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Mithril"), Hollower.hideMithril)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Mithril Ore"))
-                .setSaveConsumer((value) -> Hollower.hideMithril = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Coal"), Hollower.hideCoal)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Coal Ore"))
-                .setSaveConsumer((value) -> Hollower.hideCoal = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Iron"), Hollower.hideIron)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Iron Ore"))
-                .setSaveConsumer((value) -> Hollower.hideIron = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Redstone"), Hollower.hideRedstone)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Redstone Ore"))
-                .setSaveConsumer((value) -> Hollower.hideRedstone = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Gold"), Hollower.hideGold)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Gold Ore"))
-                .setSaveConsumer((value) -> Hollower.hideGold = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Lapis"), Hollower.hideLapis)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Lapis Ore"))
-                .setSaveConsumer((value) -> Hollower.hideLapis = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Diamond"), Hollower.hideDiamond)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Diamond Ore"))
-                .setSaveConsumer((value) -> Hollower.hideDiamond = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Emerald"), Hollower.hideEmerald)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide Emerald Ore"))
-                .setSaveConsumer((value) -> Hollower.hideEmerald = value)
-                .build());
-        selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Misc Blocks"), Hollower.hideMiscBlocks)
-                .setDefaultValue(false)
-                .setTooltip(Text.of("Hide every other block"))
-                .setSaveConsumer((value) -> Hollower.hideMiscBlocks = value)
-                .build());
-
+    public static YetAnotherConfigLib createConfigBuilder() {
+        YetAnotherConfigLib builder = YetAnotherConfigLib.createBuilder()
+                .title(Text.of("Hollower Menu"))
+                .category(ConfigCategory.createBuilder()
+                        .name(Text.of("Config - General"))
+                        .tooltip(Text.of("Change general configs for Hollower"))
+                        .option(Option.<String>createBuilder()
+                                .name(Text.of("Config Key"))
+                                .description(OptionDescription.of(Text.of("Key to open config menu")))
+                                .binding("test", () -> "test", newVal -> Hollower.config.configKey = InputUtil.fromKeyCode(67, 0))
+                                .controller(KeybindControllerBuilder::create)
+                                .build())
+                        .group(OptionGroup.createBuilder()
+                                .name(Text.of("General"))
+                                .description(OptionDescription.of(Text.of("General settings for Hollower")))
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.of("Boolean Option"))
+                                        .description(OptionDescription.of(Text.of("This text will appear as a tooltip when you hover over the option.")))
+                                        .binding(true, () -> true, newVal -> System.out.println("Option set to " + newVal))
+                                        .controller(TickBoxControllerBuilder::create)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
         return builder;
+//        ConfigBuilder builder = ConfigBuilder.create()
+//                .setParentScreen(null)
+//                .setTitle(Text.of("Hollower Config Menu"))
+//                .setTransparentBackground(true);
+//
+//        builder.setSavingRunnable(ConfigUtils::saveConfig);
+//
+//        ConfigCategory general = builder.getOrCreateCategory(Text.of("General"));
+//        ConfigEntryBuilder entryBuilder = builder.entryBuilder();
+//        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Config Key"), Hollower.config.configKey)
+//                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_C, 0))
+//                .setTooltip(Text.of("Key to open config menu"))
+//                .setKeySaveConsumer((value) -> Hollower.config.configKey = value)
+//                .build());
+//        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Copy route to clipboard"), false)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Set this value to true then save and close config menu to copy route to clipboard"))
+//                .setSaveConsumer((value) -> {if (value) RouteUtils.copyRouteToClipboard();})
+//                .build());
+//        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Import route from clipboard"), false)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Set this value to true then save and close config menu to import route from clipboard"))
+//                .setSaveConsumer((value) -> {if (value) RouteUtils.importRouteFromClipboard();})
+//                .build());
+//        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Clear route"), false)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Set this value to true then save and close config menu to clear route"))
+//                .setSaveConsumer((value) -> {if (value) RouteUtils.clearRoute();})
+//                .build());
+//        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Set blocks in route"), false)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Set this value to true then save and close config menu to set a bedrock block at each position in route"))
+//                .setSaveConsumer((value) -> {if (value) RouteUtils.setBlocksInRoute();})
+//                .build());
+//        general.addEntry(entryBuilder.startIntField(Text.of("Max Reach"), Hollower.config.maxReach)
+//                .setDefaultValue(25)
+//                .setMin(1)
+//                .setTooltip(Text.of("Max distance to raycast when creating, deleting, or selecting blocks for routes"))
+//                .setSaveConsumer((value) -> Hollower.config.maxReach = value)
+//                .build());
+//        general.addEntry(entryBuilder.startTextDescription(Text.of("All hotkeys below only work when holding a wooden pickaxe")).build());
+//        general.addEntry(entryBuilder.startTextDescription(Text.of("Creating, deleting, or selecting nodes can be changed in Minecraft controls\nthrough Attack/Destroy, Use Item/Place Block, and Pick Block respectively")).build());
+//        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Nudge Key"), Hollower.config.nudgeKey)
+//                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_CONTROL, 0))
+//                .setTooltip(Text.of("Hold key while scrolling to nudge selected block in look direction"))
+//                .setKeySaveConsumer((value) -> Hollower.config.nudgeKey = value)
+//                .build());
+//        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Swap Order Key"), Hollower.config.swapOrderKey)
+//                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_ALT, 0))
+//                .setTooltip(Text.of("Hold key while scrolling to rotate order of all blocks in route\nor hold key while selecting a new block to swap with currently selected block"))
+//                .setKeySaveConsumer((value) -> Hollower.config.swapOrderKey = value)
+//                .build());
+//        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Etherwarp Key"), Hollower.config.etherwarpKey)
+//                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_SHIFT, 0))
+//                .setTooltip(Text.of("Hold key to teleport on top of block you are looking at"))
+//                .setKeySaveConsumer((value) -> Hollower.config.etherwarpKey = value)
+//                .build());
+//        general.addEntry(entryBuilder.startColorField(Text.of("Etherwarp Block Color"), Hollower.config.etherwarpBlockColor)
+//                .setDefaultValue(0xFF00FF)
+//                .setTooltip(Text.of("Color of block to teleport to when holding etherwarp key"))
+//                .setSaveConsumer((value) -> Hollower.config.etherwarpBlockColor = Color.ofTransparent(value | (0x40 << 24)))
+//                .build());
+//        general.addEntry(entryBuilder.startIntField(Text.of("Etherwarp Range"), Hollower.config.etherwarpRange)
+//                .setDefaultValue(61)
+//                .setMin(1)
+//                .setTooltip(Text.of("Max distance to teleport when holding etherwarp key"))
+//                .setSaveConsumer((value) -> Hollower.config.etherwarpRange = value)
+//                .build());
+//
+//        ConfigCategory routeRender = builder.getOrCreateCategory(Text.of("Route Render"));
+//        routeRender.addEntry(entryBuilder.startColorField(Text.of("Route Line Color"), Hollower.config.routeLineColor)
+//                .setDefaultValue(Color.ofRGB(255, 0, 0).getColor() & 0x00ffffff)
+//                .setTooltip(Text.of("Color of lines connecting nodes in route"))
+//                .setSaveConsumer((value) -> Hollower.config.routeLineColor = Color.ofOpaque(value))
+//                .build());
+//        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Route Line Width"), Hollower.config.routeLineWidth)
+//                .setDefaultValue(3.0f)
+//                .setMin(0.0f)
+//                .setTooltip(Text.of("Width of lines connecting nodes in route"))
+//                .setSaveConsumer((value) -> Hollower.config.routeLineWidth = value)
+//                .build());
+//        routeRender.addEntry(entryBuilder.startColorField(Text.of("Outline Block Color"), Hollower.config.outlineBlockColor)
+//                .setDefaultValue(Color.ofRGB(0, 255, 0).getColor() & 0x00ffffff)
+//                .setTooltip(Text.of("Color of outline around blocks in route"))
+//                .setSaveConsumer((value) -> Hollower.config.outlineBlockColor = Color.ofOpaque(value))
+//                .build());
+//        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Outline Block Width"), Hollower.config.outlineBlockWidth)
+//                .setDefaultValue(2.0f)
+//                .setMin(0.0f)
+//                .setTooltip(Text.of("Width of outline around blocks in route"))
+//                .setSaveConsumer((value) -> Hollower.config.outlineBlockWidth = value)
+//                .build());
+//        routeRender.addEntry(entryBuilder.startColorField(Text.of("Select Block Color"), Hollower.config.selectBlockColor)
+//                .setDefaultValue(0x0000FF)
+//                .setTooltip(Text.of("Color of selected block in route"))
+//                .setSaveConsumer((value) -> Hollower.config.selectBlockColor = Color.ofTransparent(value | (0x40 << 24)))
+//                .build());
+//        routeRender.addEntry(entryBuilder.startFloatField(Text.of("Order Scale"), Hollower.config.orderScale)
+//                .setDefaultValue(0.04f)
+//                .setTooltip(Text.of("Scale of order text above blocks in route"))
+//                .setMin(0.0f)
+//                .setSaveConsumer((value) -> Hollower.config.orderScale = value)
+//                .build());
+//
+//        ConfigCategory selectiveRender = builder.getOrCreateCategory(Text.of("Selective Render"));
+//        selectiveRender.addEntry(entryBuilder.startKeyCodeField(Text.of("Toggle Selective Render Key"), Hollower.config.toggleRenderKey)
+//                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_X, 0))
+//                .setTooltip(Text.of("Key to toggle selective render"))
+//                .setKeySaveConsumer((value) -> Hollower.config.toggleRenderKey = value)
+//                .build());
+//        selectiveRender.addEntry(entryBuilder.startTextDescription(Text.of("Hide or show specific blocks from rendering\nEach additional block hidden will cause some lag when crossing chunk borders")).build());
+//        SubCategoryBuilder hideBlocks = entryBuilder.startSubCategory(Text.of("Blocks to hide"));
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Ruby"), Hollower.config.hideBlocks.hideRuby)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Ruby Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideRuby = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Topaz"), Hollower.config.hideBlocks.hideTopaz)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Topaz Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideTopaz = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Sapphire"), Hollower.config.hideBlocks.hideSapphire)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Sapphire Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideSapphire = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Amethyst"), Hollower.config.hideBlocks.hideAmethyst)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Amethyst Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideAmethyst = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Jade"), Hollower.config.hideBlocks.hideJade)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Jade Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideJade = value)
+//                .build());
+//
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Amber"), Hollower.config.hideBlocks.hideAmber)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Amber Gemstones"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideAmber = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Mithril"), Hollower.config.hideBlocks.hideMithril)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Mithril Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideMithril = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Coal"), Hollower.config.hideBlocks.hideCoal)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Coal Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideCoal = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Iron"), Hollower.config.hideBlocks.hideIron)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Iron Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideIron = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Redstone"), Hollower.config.hideBlocks.hideRedstone)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Redstone Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideRedstone = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Gold"), Hollower.config.hideBlocks.hideGold)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Gold Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideGold = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Lapis"), Hollower.config.hideBlocks.hideLapis)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Lapis Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideLapis = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Diamond"), Hollower.config.hideBlocks.hideDiamond)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Diamond Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideDiamond = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Emerald"), Hollower.config.hideBlocks.hideEmerald)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide Emerald Ore"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideEmerald = value)
+//                .build());
+//        hideBlocks.add(entryBuilder.startBooleanToggle(Text.of("Hide Misc Blocks"), Hollower.config.hideBlocks.hideMiscBlocks)
+//                .setDefaultValue(false)
+//                .setTooltip(Text.of("Hide every other block"))
+//                .setSaveConsumer((value) -> Hollower.config.hideBlocks.hideMiscBlocks = value)
+//                .build());
+//        selectiveRender.addEntry(hideBlocks.build());
+//
+//        return builder;
     }
 
     public static void saveConfig() {
@@ -318,7 +344,7 @@ public class ConfigUtils {
                 "block.minecraft.fire",
                 "block.minecraft.magenta_stained_glass_pane"
         };
-        if (Hollower.hideRuby) {
+        if (Hollower.config.hideBlocks.hideRuby) {
             block = "block.minecraft.red_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.red_stained_glass_pane";
@@ -329,7 +355,7 @@ public class ConfigUtils {
             block = "block.minecraft.red_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideTopaz) {
+        if (Hollower.config.hideBlocks.hideTopaz) {
             block = "block.minecraft.yellow_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.yellow_stained_glass_pane";
@@ -340,7 +366,7 @@ public class ConfigUtils {
             block = "block.minecraft.yellow_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideSapphire) {
+        if (Hollower.config.hideBlocks.hideSapphire) {
             block = "block.minecraft.light_blue_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.light_blue_stained_glass_pane";
@@ -351,7 +377,7 @@ public class ConfigUtils {
             block = "block.minecraft.light_blue_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideAmethyst) {
+        if (Hollower.config.hideBlocks.hideAmethyst) {
             block = "block.minecraft.purple_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.purple_stained_glass_pane";
@@ -362,7 +388,7 @@ public class ConfigUtils {
             block = "block.minecraft.purple_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideJade) {
+        if (Hollower.config.hideBlocks.hideJade) {
             block = "block.minecraft.lime_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.lime_stained_glass_pane";
@@ -373,7 +399,7 @@ public class ConfigUtils {
             block = "block.minecraft.lime_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideAmber) {
+        if (Hollower.config.hideBlocks.hideAmber) {
             block = "block.minecraft.orange_stained_glass";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.orange_stained_glass_pane";
@@ -384,7 +410,7 @@ public class ConfigUtils {
             block = "block.minecraft.orange_stained_glass_pane";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideMithril) {
+        if (Hollower.config.hideBlocks.hideMithril) {
             block = "block.minecraft.light_blue_wool";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
             block = "block.minecraft.prismarine";
@@ -403,56 +429,56 @@ public class ConfigUtils {
             block = "block.minecraft.dark_prismarine";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideCoal) {
+        if (Hollower.config.hideBlocks.hideCoal) {
             block = "block.minecraft.coal_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.coal_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideIron) {
+        if (Hollower.config.hideBlocks.hideIron) {
             block = "block.minecraft.iron_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.iron_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideRedstone) {
+        if (Hollower.config.hideBlocks.hideRedstone) {
             block = "block.minecraft.redstone_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.redstone_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideGold) {
+        if (Hollower.config.hideBlocks.hideGold) {
             block = "block.minecraft.gold_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.gold_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideLapis) {
+        if (Hollower.config.hideBlocks.hideLapis) {
             block = "block.minecraft.lapis_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.lapis_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideDiamond) {
+        if (Hollower.config.hideBlocks.hideDiamond) {
             block = "block.minecraft.diamond_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.diamond_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideEmerald) {
+        if (Hollower.config.hideBlocks.hideEmerald) {
             block = "block.minecraft.emerald_ore";
             Hollower.renderBlacklistID.put(block.hashCode(), block);
         } else {
             block = "block.minecraft.emerald_ore";
             Hollower.renderBlacklistID.remove(block.hashCode());
         }
-        if (Hollower.hideMiscBlocks) {
+        if (Hollower.config.hideBlocks.hideMiscBlocks) {
             for (String b : miscBlocks) {
                 Hollower.renderBlacklistID.put(b.hashCode(), b);
             }
