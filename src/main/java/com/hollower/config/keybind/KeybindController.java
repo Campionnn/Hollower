@@ -1,4 +1,4 @@
-package com.hollower.config;
+package com.hollower.config.keybind;
 
 import dev.isxander.yacl3.api.Option;
 

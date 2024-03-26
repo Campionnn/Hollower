@@ -1,4 +1,4 @@
-package com.hollower.config;
+package com.hollower.config.keybind;
 
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.YACLScreen;
@@ -68,7 +68,9 @@ public class KeybindControllerElement extends ControllerWidget<IKeybindControlle
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!inputFieldFocused) return false;
         inputField = "";
-        write(InputUtil.fromKeyCode(keyCode, scanCode).getLocalizedText().getString());
+        if (modifyInput(builder -> builder.insert(0, InputUtil.fromKeyCode(keyCode, scanCode).getLocalizedText().getString().toUpperCase()))) {
+            checkRenderOffset();
+        }
         unfocus();
         return true;
     }
@@ -83,16 +85,12 @@ public class KeybindControllerElement extends ControllerWidget<IKeybindControlle
     public boolean charTyped(char chr, int modifiers) {
         if (!inputFieldFocused) return false;
         if (!Screen.hasControlDown()) {
-            write(Character.toString(chr));
+            if (modifyInput(builder -> builder.insert(0, chr))) {
+                checkRenderOffset();
+            }
             return true;
         }
         return false;
-    }
-
-    public void write(String string) {
-        if (modifyInput(builder -> builder.insert(0, string))) {
-            checkRenderOffset();
-        }
     }
 
     public boolean modifyInput(Consumer<StringBuilder> consumer) {

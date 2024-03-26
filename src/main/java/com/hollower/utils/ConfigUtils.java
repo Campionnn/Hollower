@@ -1,17 +1,20 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
-import com.hollower.config.KeybindControllerBuilder;
+import com.hollower.config.keybind.KeybindControllerBuilder;
 import dev.isxander.yacl3.api.*;
-import dev.isxander.yacl3.api.controller.StringControllerBuilder;
-import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Environment(EnvType.CLIENT)
 public class ConfigUtils {
+    private static final Map<String, Integer> keyMap = new HashMap<>();
+
     public static YetAnotherConfigLib createConfigBuilder() {
         YetAnotherConfigLib builder = YetAnotherConfigLib.createBuilder()
                 .title(Text.of("Hollower Menu"))
@@ -21,18 +24,8 @@ public class ConfigUtils {
                         .option(Option.<String>createBuilder()
                                 .name(Text.of("Config Key"))
                                 .description(OptionDescription.of(Text.of("Key to open config menu")))
-                                .binding("test", () -> "test", newVal -> Hollower.config.configKey = InputUtil.fromKeyCode(67, 0))
+                                .binding("C", () -> Hollower.config.configKey.getLocalizedText().getString().toUpperCase(), newVal -> Hollower.config.configKey = InputUtil.fromKeyCode(getKeyCode(newVal), 0))
                                 .controller(KeybindControllerBuilder::create)
-                                .build())
-                        .group(OptionGroup.createBuilder()
-                                .name(Text.of("General"))
-                                .description(OptionDescription.of(Text.of("General settings for Hollower")))
-                                .option(Option.<Boolean>createBuilder()
-                                        .name(Text.of("Boolean Option"))
-                                        .description(OptionDescription.of(Text.of("This text will appear as a tooltip when you hover over the option.")))
-                                        .binding(true, () -> true, newVal -> System.out.println("Option set to " + newVal))
-                                        .controller(TickBoxControllerBuilder::create)
-                                        .build())
                                 .build())
                         .build())
                 .build();
@@ -228,6 +221,129 @@ public class ConfigUtils {
 //        selectiveRender.addEntry(hideBlocks.build());
 //
 //        return builder;
+    }
+
+    static {
+        keyMap.put("0", 48);
+        keyMap.put("1", 49);
+        keyMap.put("2", 50);
+        keyMap.put("3", 51);
+        keyMap.put("4", 52);
+        keyMap.put("5", 53);
+        keyMap.put("6", 54);
+        keyMap.put("7", 55);
+        keyMap.put("8", 56);
+        keyMap.put("9", 57);
+        keyMap.put("A", 65);
+        keyMap.put("B", 66);
+        keyMap.put("C", 67);
+        keyMap.put("D", 68);
+        keyMap.put("E", 69);
+        keyMap.put("F", 70);
+        keyMap.put("G", 71);
+        keyMap.put("H", 72);
+        keyMap.put("I", 73);
+        keyMap.put("J", 74);
+        keyMap.put("K", 75);
+        keyMap.put("L", 76);
+        keyMap.put("M", 77);
+        keyMap.put("N", 78);
+        keyMap.put("O", 79);
+        keyMap.put("P", 80);
+        keyMap.put("Q", 81);
+        keyMap.put("R", 82);
+        keyMap.put("S", 83);
+        keyMap.put("T", 84);
+        keyMap.put("U", 85);
+        keyMap.put("V", 86);
+        keyMap.put("W", 87);
+        keyMap.put("X", 88);
+        keyMap.put("Y", 89);
+        keyMap.put("Z", 90);
+        keyMap.put("F1", 290);
+        keyMap.put("F2", 291);
+        keyMap.put("F3", 292);
+        keyMap.put("F4", 293);
+        keyMap.put("F5", 294);
+        keyMap.put("F6", 295);
+        keyMap.put("F7", 296);
+        keyMap.put("F8", 297);
+        keyMap.put("F9", 298);
+        keyMap.put("F10", 299);
+        keyMap.put("F11", 300);
+        keyMap.put("F12", 301);
+        keyMap.put("F13", 302);
+        keyMap.put("F14", 303);
+        keyMap.put("F15", 304);
+        keyMap.put("F16", 305);
+        keyMap.put("F17", 306);
+        keyMap.put("F18", 307);
+        keyMap.put("F19", 308);
+        keyMap.put("F20", 309);
+        keyMap.put("F21", 310);
+        keyMap.put("F22", 311);
+        keyMap.put("F23", 312);
+        keyMap.put("F24", 313);
+        keyMap.put("F25", 314);
+        keyMap.put("NUM LOCK", 282);
+        keyMap.put("KEYPAD 0", 320);
+        keyMap.put("KEYPAD 1", 321);
+        keyMap.put("KEYPAD 2", 322);
+        keyMap.put("KEYPAD 3", 323);
+        keyMap.put("KEYPAD 4", 324);
+        keyMap.put("KEYPAD 5", 325);
+        keyMap.put("KEYPAD 6", 326);
+        keyMap.put("KEYPAD 7", 327);
+        keyMap.put("KEYPAD 8", 328);
+        keyMap.put("KEYPAD 9", 329);
+        keyMap.put("KEYPAD DECIMAL", 330);
+        keyMap.put("KEYPAD ENTER", 335);
+        keyMap.put("KEYPAD EQUAL", 336);
+        keyMap.put("DOWN ARROW", 264);
+        keyMap.put("LEFT ARROW", 263);
+        keyMap.put("RIGHT ARROW", 262);
+        keyMap.put("UP ARROW", 265);
+        keyMap.put("KEYPAD ADD", 334);
+        keyMap.put("'", 39);
+        keyMap.put("\\", 92);
+        keyMap.put(",", 44);
+        keyMap.put("=", 61);
+        keyMap.put("`", 96);
+        keyMap.put("[", 91);
+        keyMap.put("MINUS", 45);
+        keyMap.put("KEYPAD MULTIPLY", 332);
+        keyMap.put(".", 46);
+        keyMap.put("]", 93);
+        keyMap.put(";", 59);
+        keyMap.put("/", 47);
+        keyMap.put("SPACE", 32);
+        keyMap.put("TAB", 258);
+        keyMap.put("LEFT ALT", 342);
+        keyMap.put("LEFT CONTROL", 341);
+        keyMap.put("LEFT SHIFT", 340);
+        keyMap.put("LEFT SUPER", 343);
+        keyMap.put("RIGHT ALT", 346);
+        keyMap.put("RIGHT CONTROL", 345);
+        keyMap.put("RIGHT SHIFT", 344);
+        keyMap.put("RIGHT SUPER", 347);
+        keyMap.put("ENTER", 257);
+        keyMap.put("ESCAPE", 256);
+        keyMap.put("BACKSPACE", 259);
+        keyMap.put("DELETE", 261);
+        keyMap.put("END", 269);
+        keyMap.put("HOME", 268);
+        keyMap.put("INSERT", 260);
+        keyMap.put("PAGE DOWN", 267);
+        keyMap.put("PAGE UP", 266);
+        keyMap.put("CAPS LOCK", 280);
+        keyMap.put("PAUSE", 284);
+        keyMap.put("SCROLL LOCK", 281);
+        keyMap.put("PRINT SCREEN", 283);
+    }
+
+    private static int getKeyCode(String key) {
+            Integer keyCode = keyMap.get(key);
+            return keyCode != null ? keyCode : -1;
     }
 
     public static void saveConfig() {
