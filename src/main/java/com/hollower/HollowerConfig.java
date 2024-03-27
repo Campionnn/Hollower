@@ -20,6 +20,8 @@ public class HollowerConfig {
     public Color etherwarpBlockColor = new Color(255, 0, 255, 64);
     public int etherwarpRange = 61;
     public float orderScale = 0.04f;
+    public Color orderForegroundColor = new Color(255, 255, 255, 255);
+    public Color orderBackgroundColor = new Color(0, 0, 0, 70);
     public int maxReach = 20;
 
     public static class HideBlocks {

@@ -50,7 +50,7 @@ public class Hollower implements ClientModInitializer {
                 BlockPos etherwarpPos = RouteUtils.getRaycast(config.etherwarpRange);
                 RenderUtils.selectBlock(etherwarpPos, config.etherwarpBlockColor, false);
             }
-            RenderUtils.renderOrder(config.orderScale);
+            RenderUtils.renderOrder(config.orderScale, config.orderForegroundColor, config.orderBackgroundColor);
         });
 
         prevRenderBlacklistID.addAll(renderBlacklistID.values());

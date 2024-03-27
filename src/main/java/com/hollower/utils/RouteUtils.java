@@ -208,11 +208,12 @@ public class RouteUtils {
         Hollower.sendChatMessage("Route cleared");
     }
 
-    public static void setBlocksInRoute() {
+    public static void setBlocksInRoute(String block) {
         MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() == null) return;
         for (BlockPos pos : Hollower.positions) {
             Hollower.lastCommands.add("Changed");
-            client.getNetworkHandler().sendChatCommand("setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " minecraft:bedrock");
+            client.getNetworkHandler().sendChatCommand("setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + block);
         }
         Hollower.sendChatMessage("Blocks set in route");
     }

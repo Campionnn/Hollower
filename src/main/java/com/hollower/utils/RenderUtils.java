@@ -270,7 +270,7 @@ public class RenderUtils {
      *
      * @param positions the positions to render the order of
      */
-    public static void renderOrder(List<BlockPos> positions, float scale) {
+    public static void renderOrder(List<BlockPos> positions, float scale, Color foregroundColor, Color backgroundColor) {
         if (positions.isEmpty()) return;
 
         TextRenderer textRenderer = client.textRenderer;
@@ -290,7 +290,7 @@ public class RenderUtils {
 
             Matrix4f positionMatrix = matrixStack.peek().getPositionMatrix();
             VertexConsumerProvider consumers = client.getBufferBuilders().getOutlineVertexConsumers();
-            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, new Color(255, 255, 255).getRGB(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, new Color(0, 0, 0, 70).getRGB(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
+            textRenderer.draw(String.valueOf(positions.indexOf(pos)+1), -textRenderer.getWidth(String.valueOf(positions.indexOf(pos)+1)) / 2.0f, 0f, foregroundColor.getRGB(), false, positionMatrix, consumers, TextRenderer.TextLayerType.NORMAL, backgroundColor.getRGB(), LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
             matrixStack.pop();
         }
@@ -299,7 +299,7 @@ public class RenderUtils {
     /**
      * Renders the order of Hollower.positions above them.
      */
-    public static void renderOrder(float scale) {
-        renderOrder(Hollower.positions, scale);
+    public static void renderOrder(float scale, Color foregroundColor, Color backgroundColor) {
+        renderOrder(Hollower.positions, scale, foregroundColor, backgroundColor);
     }
 }
