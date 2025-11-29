@@ -23,10 +23,9 @@ public class RenderTweaks {
     public static ChunkPos center;
 
     public static boolean shouldHideBlock(long chunkHash, long blockHash) {
-        if (Hollower.renderToggle) {
-            return Hollower.renderBlacklist.get(chunkHash).containsKey(blockHash);
-        }
-        return false;
+        if (!Hollower.renderToggle) return false;
+        ConcurrentHashMap<Long, BlockPos> chunkMap = Hollower.renderBlacklist.get(chunkHash);
+        return chunkMap != null && chunkMap.containsKey(blockHash);
     }
 
     public static void reloadRender() {
@@ -103,7 +102,11 @@ public class RenderTweaks {
         BlockState originalState = getFakeBlockState(realPos);
         if (originalState == null) return;
         world.setBlockState(realPos, originalState, Block.FORCE_STATE | PASSTHROUGH);
-        Hollower.renderBlacklist.get(chunkToLong(chunkPos.x, chunkPos.z)).remove(pos.asLong());
+        // Safely remove the entry from the render blacklist only if the chunk map exists
+        ConcurrentHashMap<Long, BlockPos> chunkMap = Hollower.renderBlacklist.get(chunkToLong(chunkPos.x, chunkPos.z));
+        if (chunkMap != null) {
+            chunkMap.remove(pos.asLong());
+        }
         Hollower.renderBlacklistState.remove(realPos.asLong());
     }
 
