@@ -1,20 +1,19 @@
 {
   "required": true,
   "package": "com.hollower.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
+  "compatibilityLevel": "${mixin_compatibility}",
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "MixinBackgroundRenderer",
     "MixinChatHud",
     "MixinClient",
-    "MixinIntegratedServerLoader",
-    "MixinKeyboard",
+    "MixinEntityNoClip",
+    "MixinFullBrightLightmap",
+    "MixinGameRenderer",
+    "MixinLivingEntity",
     "MixinMouse",
-    "render.MixinClientPlayNetworkHandler",
+    "MixinPlayerNoClip",
     "render.MixinWorld"
   ]
 }

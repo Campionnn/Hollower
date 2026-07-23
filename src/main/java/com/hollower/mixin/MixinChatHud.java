@@ -3,26 +3,33 @@ package com.hollower.mixin;
 import com.hollower.Hollower;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.network.message.MessageSignatureData;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Iterator;
+
 @Environment(EnvType.CLIENT)
-@Mixin(ChatHud.class)
+@Mixin(ChatComponent.class)
 public class MixinChatHud {
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;ILnet/minecraft/client/gui/hud/MessageIndicator;Z)V", at = @At(value = "HEAD"), cancellable = true)
-    private void onAddMessage(Text message, MessageSignatureData signature, int ticks, MessageIndicator indicator, boolean refresh, CallbackInfo ci) {
-         for (String command : Hollower.lastCommands) {
-             if (message.getString().contains(command) || (command.equals("Changed") && message.getString().contains("Could"))) {
-                 Hollower.lastCommands.remove(command);
-                 ci.cancel();
-                 return;
-             }
-         }
+    @Inject(
+            method = "addServerSystemMessage(Lnet/minecraft/network/chat/Component;)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void hollower$filterCommandResponse(Component message, CallbackInfo callback) {
+        Iterator<String> commands = Hollower.lastCommands.iterator();
+        while (commands.hasNext()) {
+            String command = commands.next();
+            if (message.getString().contains(command)
+                    || (command.equals("Changed") && message.getString().contains("Could"))) {
+                commands.remove();
+                callback.cancel();
+                return;
+            }
+        }
     }
 }
