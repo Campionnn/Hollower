@@ -1,6 +1,9 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import me.shedaniel.math.Color;
@@ -8,11 +11,15 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.InvocationTargetException;
@@ -22,8 +29,42 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public final class RenderUtils {
     private static final int FULL_BRIGHT = 0x00F000F0;
+    private static final RenderType THROUGH_WALLS_LINES = RenderType.create(
+            "hollower_through_walls_lines",
+            RenderSetup.builder(RenderPipelines.register(
+                            RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                                    .withLocation(Identifier.fromNamespaceAndPath(
+                                            Hollower.MOD_ID,
+                                            "pipeline/through_walls_lines"
+                                    ))
+                                    .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+                                    .build()
+                    ))
+                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+                    .createRenderSetup()
+    );
+    private static final RenderType THROUGH_WALLS_QUADS = RenderType.create(
+            "hollower_through_walls_quads",
+            RenderSetup.builder(RenderPipelines.register(
+                            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                                    .withLocation(Identifier.fromNamespaceAndPath(
+                                            Hollower.MOD_ID,
+                                            "pipeline/through_walls_quads"
+                                    ))
+                                    .withCull(false)
+                                    .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+                                    .build()
+                    ))
+                    .sortOnUpload()
+                    .createRenderSetup()
+    );
 
     private RenderUtils() {
+    }
+
+    public static void initialize() {
+        // Static initialization registers the custom render pipelines.
     }
 
     public static void render(Object context) {
@@ -66,14 +107,14 @@ public final class RenderUtils {
             poseStack.pushPose();
             poseStack.translate(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5);
             poseStack.mulPose(camera.rotation());
-            poseStack.scale(-scale, -scale, scale);
+            poseStack.scale(scale, -scale, scale);
             collector.submitText(
                     poseStack,
                     -Hollower.client.font.width(label) / 2.0f,
                     0.0f,
                     Component.literal(label).getVisualOrderText(),
                     false,
-                    Font.DisplayMode.NORMAL,
+                    Font.DisplayMode.SEE_THROUGH,
                     FULL_BRIGHT,
                     0xFFFFFFFF,
                     0x46000000,
@@ -92,7 +133,7 @@ public final class RenderUtils {
     ) {
         if (positions.size() < 2) return;
 
-        submit(collector, poseStack, RenderTypes.linesTranslucent(), (pose, consumer) -> {
+        submit(collector, poseStack, THROUGH_WALLS_LINES, (pose, consumer) -> {
             for (int index = 0; index < positions.size(); index++) {
                 BlockPos start = positions.get(index);
                 BlockPos end = positions.get((index + 1) % positions.size());
@@ -121,7 +162,7 @@ public final class RenderUtils {
     ) {
         if (positions.isEmpty()) return;
 
-        submit(collector, poseStack, RenderTypes.linesTranslucent(), (pose, consumer) -> {
+        submit(collector, poseStack, THROUGH_WALLS_LINES, (pose, consumer) -> {
             for (BlockPos pos : positions) {
                 float minX = pos.getX();
                 float minY = pos.getY();
@@ -154,7 +195,7 @@ public final class RenderUtils {
     ) {
         if (pos == null) return;
 
-        submit(collector, poseStack, RenderTypes.debugQuads(), (pose, consumer) -> {
+        submit(collector, poseStack, THROUGH_WALLS_QUADS, (pose, consumer) -> {
             float minX = pos.getX();
             float minY = pos.getY();
             float minZ = pos.getZ();

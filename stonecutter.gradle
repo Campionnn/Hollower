@@ -11,6 +11,12 @@ stonecutter.parameters {
 		string(eval(current.version, '<26.1')) {
 			replace 'net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents',
 					'net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents'
+			replace 'import com.mojang.blaze3d.pipeline.DepthStencilState;',
+					'import com.mojang.blaze3d.platform.DepthTestFunction;'
+			replace 'import com.mojang.blaze3d.platform.CompareOp;',
+					'// DepthTestFunction is used before 26.1.'
+			replace '.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))',
+					'.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false)'
 			replace '"net.minecraft.client.renderer.LightmapRenderStateExtractor"',
 					'"net.minecraft.client.renderer.LightTexture"'
 			replace 'LevelRenderEvents.COLLECT_SUBMITS', 'WorldRenderEvents.END_MAIN'
