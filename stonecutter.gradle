@@ -13,7 +13,7 @@ stonecutter.parameters {
 					'net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents'
 			replace '"net.minecraft.client.renderer.LightmapRenderStateExtractor"',
 					'"net.minecraft.client.renderer.LightTexture"'
-			replace 'LevelRenderEvents.END_MAIN', 'WorldRenderEvents.END_MAIN'
+			replace 'LevelRenderEvents.COLLECT_SUBMITS', 'WorldRenderEvents.END_MAIN'
 			replace 'ServerTickEvents.END_LEVEL_TICK', 'ServerTickEvents.END_WORLD_TICK'
 			replace 'method = "extract"', 'method = "updateLightTexture"'
 			replace 'method = "pickBlockOrEntity"', 'method = "pickBlock"'

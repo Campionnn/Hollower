@@ -90,7 +90,7 @@ public class Hollower implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         AttackBlockCallback.EVENT.register(new PlayerUtils());
-        LevelRenderEvents.END_MAIN.register(RenderUtils::render);
+        LevelRenderEvents.COLLECT_SUBMITS.register(RenderUtils::render);
         RenderTweaks.initialize();
         NoClipController.initialize();
         initializeKeyBindings();
