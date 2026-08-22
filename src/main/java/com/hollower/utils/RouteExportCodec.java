@@ -40,7 +40,6 @@ public final class RouteExportCodec {
     }
 
     private static String encodeSkyHanni(List<BlockPos> positions) {
-        JsonObject root = new JsonObject();
         JsonArray waypoints = new JsonArray();
         for (int index = 0; index < positions.size(); index++) {
             BlockPos pos = positions.get(index);
@@ -48,17 +47,16 @@ public final class RouteExportCodec {
             waypoint.addProperty("x", pos.getX());
             waypoint.addProperty("y", pos.getY());
             waypoint.addProperty("z", pos.getZ());
-            waypoint.addProperty("r", 0.0);
-            waypoint.addProperty("g", 1.0);
-            waypoint.addProperty("b", 0.0);
+            waypoint.addProperty("r", 0);
+            waypoint.addProperty("g", 1);
+            waypoint.addProperty("b", 0);
 
             JsonObject options = new JsonObject();
             options.addProperty("name", Integer.toString(index + 1));
             waypoint.add("options", options);
             waypoints.add(waypoint);
         }
-        root.add("waypoints", waypoints);
-        return root.toString();
+        return waypoints.toString();
     }
 
     private static String encodeSkyblocker(List<BlockPos> positions) {
