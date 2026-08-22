@@ -13,16 +13,10 @@
 	},
 	"license": "GNU Lesser General Public License v3",
 	"icon": "assets/hollower/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
-		"main": [
-
-		],
 		"client": [
 			"com.hollower.Hollower"
-		],
-		"fabric-datagen": [
-
 		],
 		"modmenu": [
 			"com.hollower.ModMenuIntegration"
@@ -32,9 +26,9 @@
 		"hollower.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.6",
-		"minecraft": "~1.20.1",
-		"java": ">=17",
+		"fabricloader": ">=${loader_version}",
+		"minecraft": "${minecraft_dependency}",
+		"java": ">=${java_release}",
 		"fabric-api": "*",
 		"cloth-config2": "*"
 	},

@@ -5,55 +5,50 @@ import com.hollower.utils.PlayerUtils;
 import com.hollower.utils.RouteUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Environment(EnvType.CLIENT)
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public abstract class MixinClient {
-    @Shadow
-    static MinecraftClient instance;
-
-    @Inject(at = @At("HEAD"), method = "doAttack", cancellable = true)
-    private void doAttack(CallbackInfoReturnable<Boolean> cir) {
-        if (PlayerUtils.isHoldingTool()) {
-            RouteUtils.removePosition(RouteUtils.getNodeRaycast());
-            cir.setReturnValue(false);
-        }
+    @Inject(at = @At("HEAD"), method = "startAttack", cancellable = true)
+    private void hollower$startAttack(CallbackInfoReturnable<Boolean> callback) {
+        if (!PlayerUtils.isHoldingTool()) return;
+        RouteUtils.removePosition(RouteUtils.getNodeRaycast());
+        callback.setReturnValue(false);
     }
 
-    @Inject(at = @At("HEAD"), method = "doItemUse", cancellable = true)
-    private void doItemUse(CallbackInfo ci) {
-        if (PlayerUtils.isHoldingTool()) {
-            // prevent spam if the use key is held down
-            if (instance.world.getTime() - Hollower.lastToolUseTick > 2) {
-                if (Hollower.isKeyPressed(Hollower.etherwarpKey)) {
-                    PlayerUtils.etherwarp();
-                }
-                else {
-                    RouteUtils.addPosition(RouteUtils.getRaycast());
-                }
+    @Inject(at = @At("HEAD"), method = "startUseItem", cancellable = true)
+    private void hollower$startUseItem(CallbackInfo callback) {
+        if (!PlayerUtils.isHoldingTool()) return;
+
+        Minecraft client = Minecraft.getInstance();
+        if (client.level == null) return;
+
+        if (client.level.getGameTime() - Hollower.lastToolUseTick > 2) {
+            if (Hollower.isKeyPressed(Hollower.etherwarpKey)) {
+                PlayerUtils.etherwarp();
+            } else {
+                RouteUtils.addPosition(RouteUtils.getRaycast());
             }
-            Hollower.lastToolUseTick = instance.world.getTime();
-            ci.cancel();
         }
+        Hollower.lastToolUseTick = client.level.getGameTime();
+        callback.cancel();
     }
 
-    @Inject(at = @At("HEAD"), method = "doItemPick", cancellable = true)
-    private void doItemPick(CallbackInfo ci) {
-        if (PlayerUtils.isHoldingTool()) {
-            if (Hollower.isKeyPressed(Hollower.swapOrderKey)) {
-                RouteUtils.swapPositions(RouteUtils.getNodeRaycast());
-            }
-            else {
-                RouteUtils.selectPosition(RouteUtils.getNodeRaycast());
-            }
-            ci.cancel();
+    @Inject(at = @At("HEAD"), method = "pickBlockOrEntity", cancellable = true)
+    private void hollower$pickBlock(CallbackInfo callback) {
+        if (!PlayerUtils.isHoldingTool()) return;
+
+        if (Hollower.isKeyPressed(Hollower.swapOrderKey)) {
+            RouteUtils.swapPositions(RouteUtils.getNodeRaycast());
+        } else {
+            RouteUtils.selectPosition(RouteUtils.getNodeRaycast());
         }
+        callback.cancel();
     }
 }

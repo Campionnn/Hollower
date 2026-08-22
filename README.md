@@ -1,30 +1,54 @@
 
 # Hollower
 
-## A Minecraft 1.20.1 Fabric mod for creating routes in the Hypixel Skyblock Crystal Hollows
+## A Fabric mod for creating routes in the Hypixel Skyblock Crystal Hollows
+
+This port supports Minecraft 1.21.11, 26.1.2, and 26.2.
 
 This project was started due to the lack of mods for creating routes. It allows for very easy and intuitive creating, editing, and exporting of routes while also clearly visualizing them in the world. Many features were heavily inspired by [litematica](https://github.com/maruohon/litematica) and [tweakfork](https://github.com/Andrews54757/tweakfork)
 
 ### Requirements
-* Minecraft Fabric 1.20.1 https://fabricmc.net/
+* A Fabric instance for Minecraft 1.21.11, 26.1.2, or 26.2: https://fabricmc.net/
 * Fabric API [Modrinth](https://modrinth.com/mod/fabric-api) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | [GitHub](https://github.com/FabricMC/fabric)
 * Cloth Config [Modrinth](https://modrinth.com/mod/cloth-config) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/cloth-config) | [GitHub](https://github.com/shedaniel/cloth-config)
-* noclip (recommended) [Modrinth](https://modrinth.com/mod/noclip) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/noclip) | [GitHub](https://github.com/andantet/noclip)
 
 ### Download
 Download the latest release from the [releases page](https://github.com/Campionnn/Hollower/releases)
 
 ### Compiling
 * Clone the repository
-* Run `./gradlew build` in the root directory
-* The compiled jar will be in `build/libs`
+* Use Java 25
+* Run `./gradlew chiseledBuild` in the root directory
+* The three compiled JAR files will be in `build/libs`
 
 ### Getting Started
-* Install a Fabric 1.20.1 instance
+* Install a supported Fabric instance
 * Put all the above mods into the mods folder
 * Follow the instructions in https://github.com/Campionnn/CleanCH to get a world save of a clean Crystal Hollows
 * Most route related features will only work while holding a wooden pickaxe
 * Press C to open the config menu where many settings can be changed
+* Config, noclip, and selective rendering keys are listed under Hollower in Minecraft Controls
+* Press N to toggle noclip in a local world. Use the movement keys, jump, and sneak to fly. Hold sprint to move faster.
+* Fullbright is enabled by default for local worlds and can be disabled in the config menu.
+
+### Exporting a Route
+* Press C to open the config menu.
+* In General, turn on Export route.
+* Save and close the menu.
+* Select one of these formats in the export screen:
+    * [Waypointer](https://github.com/ethanrjs/waypointer) (Recommended)
+    * [SkyHanni](https://github.com/hannibal002/SkyHanni)
+    * [Skyblocker](https://github.com/SkyblockerMod/Skyblocker)
+* The selected route is copied to your clipboard.
+* Waypointer exports use the v8 `WP:` [wire format](https://github.com/ethanrjs/waypointer/blob/main/CODEC.md).
+* Waypointer and Skyblocker exports set the zone to Crystal Hollows automatically.
+
+### Noclip (N)
+* Noclip only works in local worlds. It does not activate on remote servers.
+* The mod applies noclip to both the local player and the integrated server player.
+* The mod reapplies the noclip collision state after each vanilla player-tick reset. This prevents block collisions and position corrections from pushing the player out of blocks.
+* Move outside solid blocks before you disable noclip.
+* The implementation follows the player-tick method used by the [noclip mod linked by the original project](https://github.com/dvitski/noclip).
 
 ### Features
 * Place nodes by pressing the Use Item/Place Block key
@@ -40,12 +64,10 @@ Download the latest release from the [releases page](https://github.com/Campionn
     * Allows you to enable/disable the rendering certain blocks so you don't get distracted by unnecessary clutter
     * This feature can be very intensive on Minecraft especially at high render distances
     * You will likely experience some stutters while crossing chunk borders because it has to process the newly loaded chunks
-    * Because the blocks are only hidden client side, you will run into ghost blocks. I have tried to implement a feature for no clip, but it is a lot more complicated than I initially thought. You can use this [noclip mod](https://www.curseforge.com/minecraft/mc-mods/noclip) until I do this myself
+    * Because the blocks are only hidden client side, you can run into ghost blocks. Use noclip in a local world to move through them.
 * Remove fog so you can see as far as your render distance
-* Disable experimental world settings warning when loading a world
 
 ### Planned/Work in Progress
-* Implementing no clip natively into the mod
 * Save configs to a config file. Right now all settings get reset to the defaults when relaunching game (sorry)
 * Menu to save/manage multiple routes so you can easily edit or copy them
 * Visualizing reachable gemstones from each node

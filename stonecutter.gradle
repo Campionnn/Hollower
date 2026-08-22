@@ -1,0 +1,44 @@
+plugins {
+	id 'dev.kikugie.stonecutter'
+	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
+}
+
+stonecutter.active '26.1.2' /* [SC] DO NOT EDIT */
+
+stonecutter.parameters {
+	replacements {
+		string(eval(current.version, '<26.1')) {
+			replace 'net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents',
+					'net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents'
+			replace 'import com.mojang.blaze3d.pipeline.DepthStencilState;',
+					'import com.mojang.blaze3d.platform.DepthTestFunction;'
+			replace 'import com.mojang.blaze3d.platform.CompareOp;',
+					'// DepthTestFunction is used before 26.1.'
+			replace '.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))',
+					'.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false)'
+			replace '"net.minecraft.client.renderer.LightmapRenderStateExtractor"',
+					'"net.minecraft.client.renderer.LightTexture"'
+			replace 'LevelRenderEvents.COLLECT_SUBMITS', 'WorldRenderEvents.END_MAIN'
+			replace 'ServerTickEvents.END_LEVEL_TICK', 'ServerTickEvents.END_WORLD_TICK'
+			replace 'method = "extract"', 'method = "updateLightTexture"'
+			replace 'method = "pickBlockOrEntity"', 'method = "pickBlock"'
+			replace 'return mapping;', 'return net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper.registerKeyBinding(mapping);'
+			replace '.addServerSystemMessage(message)', '.addMessage(message)'
+			replace '"addServerSystemMessage(Lnet/minecraft/network/chat/Component;)V"',
+					'"addMessage(Lnet/minecraft/network/chat/Component;)V"'
+		}
+		string(eval(current.version, '>=26.2')) {
+			replace 'client.setScreen(screen);', 'client.gui.setScreen(screen);'
+			replace 'return client.screen;', 'return client.gui.screen();'
+			replace 'renderer.getMainCamera()', 'renderer.mainCamera()'
+			replace 'client.gui.getChat()', 'client.gui.hud.getChat()'
+			replace 'method = "getNightVisionScale"', 'method = "nightVisionScale"'
+		}
+	}
+}
+
+tasks.register('chiseledBuild') {
+	group = 'project'
+	dependsOn stonecutter.tasks.named('build').map { it.values() }
+}

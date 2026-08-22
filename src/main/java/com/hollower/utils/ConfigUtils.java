@@ -1,18 +1,37 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import com.hollower.screen.RouteExportScreen;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.math.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class ConfigUtils {
+    private static final class Text {
+        private Text() {
+        }
+
+        private static Component of(String value) {
+            return Component.literal(value);
+        }
+    }
+
+    private static final class InputUtil {
+        private InputUtil() {
+        }
+
+        private static InputConstants.Key fromKeyCode(int keyCode, int scanCode) {
+            return Hollower.key(keyCode);
+        }
+    }
+
     public static ConfigBuilder createConfigBuilder() {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(null)
@@ -23,15 +42,15 @@ public class ConfigUtils {
 
         ConfigCategory general = builder.getOrCreateCategory(Text.of("General"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Config Key"), Hollower.configKey)
+        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Config Key"), Hollower.getConfigKey())
                 .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_C, 0))
                 .setTooltip(Text.of("Key to open config menu"))
-                .setKeySaveConsumer((value) -> Hollower.configKey = value)
+                .setKeySaveConsumer(Hollower::setConfigKey)
                 .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Copy route to clipboard"), false)
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Export route"), false)
                 .setDefaultValue(false)
-                .setTooltip(Text.of("Set this value to true then save and close config menu to copy route to clipboard"))
-                .setSaveConsumer((value) -> {if (value) RouteUtils.copyRouteToClipboard();})
+                .setTooltip(Text.of("Turn this on, then save and close the menu to choose an export format"))
+                .setSaveConsumer((value) -> {if (value) RouteExportScreen.requestOpen();})
                 .build());
         general.addEntry(entryBuilder.startBooleanToggle(Text.of("Import route from clipboard"), false)
                 .setDefaultValue(false)
@@ -54,7 +73,17 @@ public class ConfigUtils {
                 .setTooltip(Text.of("Max distance to raycast when creating, deleting, or selecting blocks for routes"))
                 .setSaveConsumer((value) -> Hollower.maxReach = value)
                 .build());
-        general.addEntry(entryBuilder.startTextDescription(Text.of("All hotkeys below only work when holding a wooden pickaxe")).build());
+        general.addEntry(entryBuilder.startKeyCodeField(Text.of("Noclip Key"), Hollower.getNoClipKey())
+                .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_N, 0))
+                .setTooltip(Text.of("Toggle local-world noclip. Sprint moves faster."))
+                .setKeySaveConsumer(Hollower::setNoClipKey)
+                .build());
+        general.addEntry(entryBuilder.startBooleanToggle(Text.of("Fullbright"), Hollower.fullBright)
+                .setDefaultValue(true)
+                .setTooltip(Text.of("Keep local worlds fully lit"))
+                .setSaveConsumer((value) -> Hollower.fullBright = value)
+                .build());
+        general.addEntry(entryBuilder.startTextDescription(Text.of("Route editing hotkeys below only work when holding a wooden pickaxe")).build());
         general.addEntry(entryBuilder.startTextDescription(Text.of("Creating, deleting, or selecting nodes can be changed in Minecraft controls\nthrough Attack/Destroy, Use Item/Place Block, and Pick Block respectively")).build());
         general.addEntry(entryBuilder.startKeyCodeField(Text.of("Nudge Key"), Hollower.nudgeKey)
                 .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_LEFT_CONTROL, 0))
@@ -119,10 +148,11 @@ public class ConfigUtils {
                 .build());
 
         ConfigCategory selectiveRender = builder.getOrCreateCategory(Text.of("Selective Render"));
-        selectiveRender.addEntry(entryBuilder.startKeyCodeField(Text.of("Toggle Selective Render Key"), Hollower.toggleRenderKey)
+        selectiveRender.addEntry(entryBuilder.startKeyCodeField(
+                        Text.of("Toggle Selective Render Key"), Hollower.getToggleRenderKey())
                 .setDefaultValue(InputUtil.fromKeyCode(GLFW.GLFW_KEY_X, 0))
                 .setTooltip(Text.of("Key to toggle selective render"))
-                .setKeySaveConsumer((value) -> Hollower.toggleRenderKey = value)
+                .setKeySaveConsumer(Hollower::setToggleRenderKey)
                 .build());
         selectiveRender.addEntry(entryBuilder.startTextDescription(Text.of("Hide or show specific blocks from rendering\nEach additional block hidden will cause some lag when crossing chunk borders")).build());
         selectiveRender.addEntry(entryBuilder.startBooleanToggle(Text.of("Hide Ruby"), Hollower.hideRuby)
@@ -464,11 +494,13 @@ public class ConfigUtils {
 
         if (Hollower.prevRenderBlacklistID.size() != Hollower.renderBlacklistID.size()) {
             RenderTweaks.refreshRender();
+            Hollower.prevRenderBlacklistID.clear();
             Hollower.prevRenderBlacklistID.addAll(Hollower.renderBlacklistID.values());
         } else {
             for (String b : Hollower.prevRenderBlacklistID) {
                 if (!Hollower.renderBlacklistID.containsValue(b)) {
                     RenderTweaks.refreshRender();
+                    Hollower.prevRenderBlacklistID.clear();
                     Hollower.prevRenderBlacklistID.addAll(Hollower.renderBlacklistID.values());
                     break;
                 }

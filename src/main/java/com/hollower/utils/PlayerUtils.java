@@ -4,78 +4,74 @@ import com.hollower.Hollower;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Items;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 @Environment(EnvType.CLIENT)
-public class PlayerUtils implements AttackBlockCallback {
-    private static final MinecraftClient client = MinecraftClient.getInstance();
+public final class PlayerUtils implements AttackBlockCallback {
+    private static final Minecraft CLIENT = Minecraft.getInstance();
 
     @Override
-    public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction) {
-        if (world.isClient) {
-            if (isHoldingTool()) {
-                return ActionResult.FAIL;
-            }
-        }
-        return ActionResult.PASS;
+    public InteractionResult interact(
+            Player player, Level level, InteractionHand hand, BlockPos pos, Direction direction) {
+        return level.isClientSide() && isHoldingTool()
+                ? InteractionResult.FAIL
+                : InteractionResult.PASS;
     }
 
-    /**
-     * Check if the player is holding a wooden pickaxe
-     * @return true if the player is holding a wooden pickaxe
-     */
     public static boolean isHoldingTool() {
-        if (client.player == null) return false;
-        return client.player.getMainHandStack().getItem() == Items.WOODEN_PICKAXE;
+        return CLIENT.player != null && CLIENT.player.getMainHandItem().is(Items.WOODEN_PICKAXE);
     }
 
-    /**
-     * Get the closest looking direction of the player
-     * @return the closest looking direction of the player
-     */
     public static Direction getClosestLookingDirection() {
-        Entity entity = client.getCameraEntity();
-        if (entity.getPitch() > 60.0f)
-        {
-            return Direction.DOWN;
-        }
-        else if (-entity.getPitch() > 60.0f)
-        {
-            return Direction.UP;
-        }
+        Entity entity = CLIENT.getCameraEntity();
+        if (entity == null) return Direction.NORTH;
+        if (entity.getXRot() > 60.0f) return Direction.DOWN;
+        if (entity.getXRot() < -60.0f) return Direction.UP;
+        return Direction.fromYRot(entity.getYRot());
+    }
 
-        return Direction.fromRotation(entity.getYaw());
+    public static BlockPos getEtherwarpBlock() {
+        return RouteUtils.getRaycast(Hollower.etherwarpRange);
     }
 
     public static void etherwarp() {
-        BlockPos pos = RouteUtils.getRaycast(61);
-        if (pos != null) {
-            if (!client.world.getBlockState(pos.offset(Direction.UP)).isAir() || !client.world.getBlockState(pos.offset(Direction.UP).offset(Direction.UP)).isAir()) {
-                Hollower.sendChatMessage("§cCannot teleport to that location");
-                return;
-            }
-            else if (Hollower.renderToggle) {
-                long pos1 = pos.offset(Direction.UP).asLong();
-                long pos2 = pos.offset(Direction.UP).offset(Direction.UP).asLong();
-                if (Hollower.renderBlacklistState.containsKey(pos1) || Hollower.renderBlacklistState.containsKey(pos2)) {
-                    Hollower.sendChatMessage("§cCannot teleport to that location due to unrendered blocks");
-                    return;
-                }
-            }
-            BlockPos teleportPos = pos.offset(Direction.UP);
-            Hollower.lastCommands.add("Teleported");
-            client.getNetworkHandler().sendChatCommand("tp " + teleportPos.getX() + " " + teleportPos.getY() + " " + teleportPos.getZ());
-            client.world.playSound(teleportPos.getX() + 0.5d, teleportPos.getY(), teleportPos.getZ() + 0.5d, SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f, false);
+        BlockPos pos = getEtherwarpBlock();
+        if (pos == null || CLIENT.level == null || CLIENT.getConnection() == null) return;
+
+        BlockPos feet = pos.above();
+        BlockPos head = feet.above();
+        if (!CLIENT.level.getBlockState(feet).isAir() || !CLIENT.level.getBlockState(head).isAir()) {
+            Hollower.sendChatMessage("§cCannot teleport to that location");
+            return;
         }
+        if (Hollower.renderToggle
+                && (Hollower.renderBlacklistState.containsKey(feet.asLong())
+                || Hollower.renderBlacklistState.containsKey(head.asLong()))) {
+            Hollower.sendChatMessage("§cCannot teleport to that location due to hidden blocks");
+            return;
+        }
+
+        Hollower.lastCommands.add("Teleported");
+        CLIENT.getConnection().sendCommand(
+                "tp " + feet.getX() + " " + feet.getY() + " " + feet.getZ());
+        CLIENT.level.playLocalSound(
+                feet.getX() + 0.5,
+                feet.getY(),
+                feet.getZ() + 0.5,
+                SoundEvents.ENDERMAN_TELEPORT,
+                SoundSource.PLAYERS,
+                1.0f,
+                1.0f,
+                false);
     }
 }
