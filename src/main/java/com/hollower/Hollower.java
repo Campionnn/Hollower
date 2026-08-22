@@ -1,8 +1,9 @@
 package com.hollower;
 
-import com.hollower.screen.RouteExportScreen;
+import com.hollower.render.SelectiveRender;
+import com.hollower.screen.HollowerConfigScreen;
 import com.hollower.utils.ClientCompat;
-import com.hollower.utils.ConfigUtils;
+import com.hollower.utils.HollowerConfig;
 import com.hollower.utils.KeyBindingCompat;
 import com.hollower.utils.NoClipController;
 import com.hollower.utils.PlayerUtils;
@@ -10,7 +11,6 @@ import com.hollower.utils.RenderTweaks;
 import com.hollower.utils.RenderUtils;
 import com.hollower.utils.RouteUtils;
 import com.mojang.blaze3d.platform.InputConstants;
-import me.shedaniel.math.Color;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -47,7 +47,6 @@ public class Hollower implements ClientModInitializer {
             new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<Long, BlockState> renderBlacklistState = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<Integer, String> renderBlacklistID = new ConcurrentHashMap<>();
-    public static final ArrayList<String> prevRenderBlacklistID = new ArrayList<>();
 
     public static InputConstants.Key configKey = key(GLFW.GLFW_KEY_C);
     public static InputConstants.Key nudgeKey = key(GLFW.GLFW_KEY_LEFT_CONTROL);
@@ -62,33 +61,21 @@ public class Hollower implements ClientModInitializer {
     public static boolean renderToggle;
     public static volatile boolean noClip;
     public static boolean fullBright = true;
-    public static boolean hideRuby;
-    public static boolean hideTopaz;
-    public static boolean hideSapphire;
-    public static boolean hideAmethyst;
-    public static boolean hideJade;
-    public static boolean hideMithril;
-    public static boolean hideAmber;
-    public static boolean hideCoal;
-    public static boolean hideIron;
-    public static boolean hideRedstone;
-    public static boolean hideGold;
-    public static boolean hideLapis;
-    public static boolean hideDiamond;
-    public static boolean hideEmerald;
-    public static boolean hideMiscBlocks;
 
-    public static Color routeLineColor = Color.ofRGBA(255, 0, 0, 255);
+    /** Colours are packed ARGB. The two selection highlights are deliberately translucent. */
+    public static int routeLineColor = 0xFFFF0000;
     public static float routeLineWidth = 3.0f;
-    public static Color outlineBlockColor = Color.ofRGBA(0, 255, 0, 255);
+    public static int outlineBlockColor = 0xFF00FF00;
     public static float outlineBlockWidth = 2.0f;
-    public static Color selectBlockColor = Color.ofRGBA(0, 0, 255, 64);
-    public static Color etherwarpBlockColor = Color.ofRGBA(255, 0, 255, 64);
+    public static int selectBlockColor = 0x400000FF;
+    public static int etherwarpBlockColor = 0x40FF00FF;
     public static int etherwarpRange = 61;
     public static float orderScale = 0.04f;
 
     @Override
     public void onInitializeClient() {
+        HollowerConfig.load();
+        SelectiveRender.apply();
         AttackBlockCallback.EVENT.register(new PlayerUtils());
         RenderUtils.initialize();
         LevelRenderEvents.COLLECT_SUBMITS.register(RenderUtils::render);
@@ -97,7 +84,6 @@ public class Hollower implements ClientModInitializer {
         initializeKeyBindings();
 
         FogRenderer.toggleFog();
-        prevRenderBlacklistID.addAll(renderBlacklistID.values());
     }
 
     public static void sendChatMessage(String message) {
@@ -117,12 +103,11 @@ public class Hollower implements ClientModInitializer {
     }
 
     private static void handleKeyBindings(Minecraft client) {
-        RouteExportScreen.openIfRequested(client);
         boolean canHandle = client.level != null
                 && client.player != null
                 && ClientCompat.currentScreen(client) == null;
         while (configKeyBinding.consumeClick()) {
-            if (canHandle) ClientCompat.setScreen(client, ConfigUtils.createConfigBuilder().build());
+            if (canHandle) ClientCompat.setScreen(client, new HollowerConfigScreen(null));
         }
         while (toggleRenderKeyBinding.consumeClick()) {
             if (canHandle) toggleSelectiveRender();

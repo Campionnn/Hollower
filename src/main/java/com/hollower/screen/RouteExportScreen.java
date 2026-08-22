@@ -5,28 +5,27 @@ import com.hollower.utils.RouteExportCodec;
 import com.hollower.utils.RouteUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+/**
+ * Picks the format a route is copied to the clipboard in.
+ * <p>
+ * Opened straight from the config screen's "Export Route" button and returns to it, which is why there is
+ * no longer a deferred-open dance here: that only existed because the old Cloth Config menu had to finish
+ * closing before another screen could take its place.
+ */
 @Environment(EnvType.CLIENT)
 public final class RouteExportScreen extends Screen {
-    private static boolean openRequested;
+    private final Screen parent;
 
-    public RouteExportScreen() {
+    public RouteExportScreen(Screen parent) {
         super(Component.literal("Export Route"));
-    }
-
-    public static void requestOpen() {
-        openRequested = true;
-    }
-
-    public static void openIfRequested(Minecraft client) {
-        if (!openRequested || ClientCompat.currentScreen(client) != null) return;
-        openRequested = false;
-        ClientCompat.setScreen(client, new RouteExportScreen());
+        this.parent = parent;
     }
 
     @Override
@@ -37,7 +36,7 @@ public final class RouteExportScreen extends Screen {
 
         addRenderableWidget(new StringWidget(
                 left, top - 30, buttonWidth, 20,
-                Component.literal("Choose an export format"), font));
+                Component.literal("Copy route to clipboard as").withStyle(ChatFormatting.YELLOW), font));
         addTargetButton(left, top, buttonWidth, "Waypointer (Recommended)", RouteExportCodec.Target.WAYPOINTER);
         addTargetButton(left, top + 24, buttonWidth, "SkyHanni", RouteExportCodec.Target.SKYHANNI);
         addTargetButton(left, top + 48, buttonWidth, "Skyblocker", RouteExportCodec.Target.SKYBLOCKER);
@@ -52,5 +51,15 @@ public final class RouteExportScreen extends Screen {
                 })
                 .bounds(x, y, width, 20)
                 .build());
+    }
+
+    @Override
+    public void onClose() {
+        ClientCompat.setScreen(Minecraft.getInstance(), parent);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }

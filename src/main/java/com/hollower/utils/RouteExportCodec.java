@@ -1,14 +1,18 @@
 package com.hollower.utils;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.core.BlockPos;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public final class RouteExportCodec {
@@ -92,6 +96,59 @@ public final class RouteExportCodec {
         root.add(group);
         return "[Skyblocker-Waypoint-Data-V1]"
                 + Base64.getEncoder().encodeToString(gzip(root.toString()));
+    }
+
+    public static List<BlockPos> decode(String data) {
+        String trimmed = data == null ? "" : data.trim();
+        if (trimmed.startsWith("WP:")) {
+            return WaypointerV8Codec.decode(trimmed.substring(3));
+        }
+        if (trimmed.startsWith("[Skyblocker-Waypoint-Data-V1]")) {
+            return decodeSkyblocker(trimmed.substring("[Skyblocker-Waypoint-Data-V1]".length()));
+        }
+        if (trimmed.startsWith("[")) {
+            return decodeSkyHanni(trimmed);
+        }
+        throw new IllegalArgumentException("Unrecognized route format");
+    }
+
+    private static List<BlockPos> decodeSkyHanni(String json) {
+        List<BlockPos> positions = new ArrayList<>();
+        JsonArray waypoints = JsonParser.parseString(json).getAsJsonArray();
+        for (JsonElement element : waypoints) {
+            JsonObject waypoint = element.getAsJsonObject();
+            positions.add(new BlockPos(
+                    waypoint.get("x").getAsInt(),
+                    waypoint.get("y").getAsInt(),
+                    waypoint.get("z").getAsInt()));
+        }
+        return positions;
+    }
+
+    private static List<BlockPos> decodeSkyblocker(String base64) {
+        List<BlockPos> positions = new ArrayList<>();
+        String json = gunzip(Base64.getDecoder().decode(base64));
+        JsonArray groups = JsonParser.parseString(json).getAsJsonArray();
+        for (JsonElement groupElement : groups) {
+            JsonObject group = groupElement.getAsJsonObject();
+            if (!group.has("waypoints")) continue;
+            for (JsonElement waypointElement : group.getAsJsonArray("waypoints")) {
+                JsonArray pos = waypointElement.getAsJsonObject().getAsJsonArray("pos");
+                positions.add(new BlockPos(
+                        pos.get(0).getAsInt(),
+                        pos.get(1).getAsInt(),
+                        pos.get(2).getAsInt()));
+            }
+        }
+        return positions;
+    }
+
+    private static String gunzip(byte[] input) {
+        try (GZIPInputStream gzip = new GZIPInputStream(new java.io.ByteArrayInputStream(input))) {
+            return new String(gzip.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException error) {
+            throw new IllegalArgumentException("Could not decompress Skyblocker route", error);
+        }
     }
 
     private static byte[] gzip(String input) {

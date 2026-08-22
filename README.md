@@ -10,7 +10,6 @@ This project was started due to the lack of mods for creating routes. It allows 
 ### Requirements
 * A Fabric instance for Minecraft 1.21.11, 26.1.2, or 26.2: https://fabricmc.net/
 * Fabric API [Modrinth](https://modrinth.com/mod/fabric-api) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | [GitHub](https://github.com/FabricMC/fabric)
-* Cloth Config [Modrinth](https://modrinth.com/mod/cloth-config) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/cloth-config) | [GitHub](https://github.com/shedaniel/cloth-config)
 
 ### Download
 Download the latest release from the [releases page](https://github.com/Campionnn/Hollower/releases)
@@ -33,8 +32,7 @@ Download the latest release from the [releases page](https://github.com/Campionn
 
 ### Exporting a Route
 * Press C to open the config menu.
-* In General, turn on Export route.
-* Save and close the menu.
+* On the Route tab, click Export Route.
 * Select one of these formats in the export screen:
     * [Waypointer](https://github.com/ethanrjs/waypointer) (Recommended)
     * [SkyHanni](https://github.com/hannibal002/SkyHanni)
@@ -68,7 +66,6 @@ Download the latest release from the [releases page](https://github.com/Campionn
 * Remove fog so you can see as far as your render distance
 
 ### Planned/Work in Progress
-* Save configs to a config file. Right now all settings get reset to the defaults when relaunching game (sorry)
 * Menu to save/manage multiple routes so you can easily edit or copy them
 * Visualizing reachable gemstones from each node
 * Render a plane to visualize where the magma field starts (maybe not necessary)

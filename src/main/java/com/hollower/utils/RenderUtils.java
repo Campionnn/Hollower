@@ -6,7 +6,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import me.shedaniel.math.Color;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;
@@ -128,7 +128,7 @@ public final class RenderUtils {
             SubmitNodeCollector collector,
             PoseStack poseStack,
             List<BlockPos> positions,
-            Color color,
+            int color,
             float width
     ) {
         if (positions.size() < 2) return;
@@ -157,7 +157,7 @@ public final class RenderUtils {
             SubmitNodeCollector collector,
             PoseStack poseStack,
             List<BlockPos> positions,
-            Color color,
+            int color,
             float width
     ) {
         if (positions.isEmpty()) return;
@@ -191,7 +191,7 @@ public final class RenderUtils {
             SubmitNodeCollector collector,
             PoseStack poseStack,
             BlockPos pos,
-            Color color
+            int color
     ) {
         if (pos == null) return;
 
@@ -230,7 +230,7 @@ public final class RenderUtils {
             float endX,
             float endY,
             float endZ,
-            Color color,
+            int color,
             float width
     ) {
         float normalX = endX - startX;
@@ -254,7 +254,7 @@ public final class RenderUtils {
     private static void quad(
             PoseStack.Pose pose,
             VertexConsumer consumer,
-            Color color,
+            int color,
             float x1,
             float y1,
             float z1,
@@ -280,10 +280,14 @@ public final class RenderUtils {
             float x,
             float y,
             float z,
-            Color color
+            int color
     ) {
         return consumer.addVertex(pose, x, y, z)
-                .setColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+                .setColor(
+                        (color >> 16) & 0xFF,
+                        (color >> 8) & 0xFF,
+                        color & 0xFF,
+                        (color >>> 24) & 0xFF);
     }
 
     private static <T> T getContextValue(Object context, Class<T> type, String... methodNames) {

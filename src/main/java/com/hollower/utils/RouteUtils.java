@@ -138,17 +138,13 @@ public final class RouteUtils {
         Hollower.positions.clear();
         Hollower.selected = null;
         try {
-            String[] nodes = Hollower.getClipboard().split("},");
-            for (String node : nodes) {
-                String[] parts = node.split(",");
-                int x = Integer.parseInt(parts[0].split(":")[1]);
-                int y = Integer.parseInt(parts[1].split(":")[1]);
-                int z = Integer.parseInt(parts[2].split(":")[1]);
-                Hollower.positions.add(new BlockPos(x, y, z));
-            }
+            List<BlockPos> imported = RouteExportCodec.decode(Hollower.getClipboard());
+            if (imported.isEmpty()) throw new IllegalArgumentException("No waypoints found");
+            Hollower.positions.addAll(imported);
             Hollower.sendChatMessage("Route imported from clipboard");
         } catch (RuntimeException error) {
             Hollower.positions.clear();
+            Hollower.LOGGER.error("Could not import route from clipboard", error);
             Hollower.sendChatMessage("§cFailed to import route from clipboard");
         }
     }
