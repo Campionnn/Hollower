@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinEntityNoClip {
     @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
     private void hollower$removeNoClipGravity(CallbackInfoReturnable<Double> callbackInfo) {
-        if (NoClipController.ignoresGravity((Entity) (Object) this)) {
+        if (NoClipController.isNoClipping((Entity) (Object) this)) {
             callbackInfo.setReturnValue(0.0);
         }
     }

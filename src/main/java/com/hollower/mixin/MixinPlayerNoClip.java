@@ -1,6 +1,7 @@
 package com.hollower.mixin;
 
 import com.hollower.utils.NoClipController;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,5 +22,14 @@ public abstract class MixinPlayerNoClip {
     )
     private void hollower$restoreNoClipAfterVanillaReset(CallbackInfo callbackInfo) {
         NoClipController.onPlayerTick((Player) (Object) this);
+    }
+
+    @Inject(method = "updatePlayerPose", at = @At("HEAD"), cancellable = true)
+    private void hollower$keepNoClipPoseUpright(CallbackInfo callbackInfo) {
+        Player player = (Player) (Object) this;
+        if (!NoClipController.isNoClipping(player)) return;
+
+        player.setPose(Pose.STANDING);
+        callbackInfo.cancel();
     }
 }

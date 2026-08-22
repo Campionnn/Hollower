@@ -346,7 +346,8 @@ public class ConfigUtils {
                 "block.minecraft.dark_oak_planks",
                 "block.minecraft.ladder",
                 "block.minecraft.fire",
-                "block.minecraft.magenta_stained_glass_pane"
+                "block.minecraft.magenta_stained_glass_pane",
+                "block.minecraft.short_grass"
         };
         if (Hollower.hideRuby) {
             block = "block.minecraft.red_stained_glass";

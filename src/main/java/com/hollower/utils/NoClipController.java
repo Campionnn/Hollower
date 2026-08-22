@@ -122,7 +122,7 @@ public final class NoClipController {
         applyNoClip(serverPlayer);
     }
 
-    public static boolean ignoresGravity(Entity entity) {
+    public static boolean isNoClipping(Entity entity) {
         if (!Hollower.noClip) return false;
         if (entity == trackedClientPlayer) return true;
         if (!(entity instanceof ServerPlayer serverPlayer)) return false;
