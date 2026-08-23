@@ -50,6 +50,12 @@ public final class HollowerConfig {
         int selectBlockColor = 0x400000FF;
         float orderScale = 0.04f;
 
+        float optimizeHorizontalScale = 1.0f;
+        float optimizeVerticalScale = 2.0f;
+        float optimizeTurnWeight = 8.0f;
+        boolean optimizeClosedLoop = true;
+        boolean optimizePinFirst = true;
+
         // Enum names of the hidden HiddenBlockGroups, so reordering the enum is safe.
         List<String> hiddenGroups = List.of();
     }
@@ -87,6 +93,12 @@ public final class HollowerConfig {
         Hollower.selectBlockColor = data.selectBlockColor;
         Hollower.orderScale = data.orderScale;
 
+        Hollower.optimizeHorizontalScale = data.optimizeHorizontalScale;
+        Hollower.optimizeVerticalScale = data.optimizeVerticalScale;
+        Hollower.optimizeTurnWeight = data.optimizeTurnWeight;
+        Hollower.optimizeClosedLoop = data.optimizeClosedLoop;
+        Hollower.optimizePinFirst = data.optimizePinFirst;
+
         SelectiveRender.loadState(data.hiddenGroups);
     }
 
@@ -112,6 +124,12 @@ public final class HollowerConfig {
         data.outlineBlockWidth = Hollower.outlineBlockWidth;
         data.selectBlockColor = Hollower.selectBlockColor;
         data.orderScale = Hollower.orderScale;
+
+        data.optimizeHorizontalScale = Hollower.optimizeHorizontalScale;
+        data.optimizeVerticalScale = Hollower.optimizeVerticalScale;
+        data.optimizeTurnWeight = Hollower.optimizeTurnWeight;
+        data.optimizeClosedLoop = Hollower.optimizeClosedLoop;
+        data.optimizePinFirst = Hollower.optimizePinFirst;
 
         data.hiddenGroups = SelectiveRender.saveState();
 

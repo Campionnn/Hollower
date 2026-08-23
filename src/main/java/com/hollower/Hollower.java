@@ -65,6 +65,14 @@ public class Hollower implements ClientModInitializer {
     public static int etherwarpRange = 61;
     public static float orderScale = 0.04f;
 
+    // Route order optimizer. Height changes cost double by default, since climbing between mining
+    // spots is slower than walking the same distance flat.
+    public static float optimizeHorizontalScale = 1.0f;
+    public static float optimizeVerticalScale = 2.0f;
+    public static float optimizeTurnWeight = 8.0f;
+    public static boolean optimizeClosedLoop = true;
+    public static boolean optimizePinFirst = true;
+
     @Override
     public void onInitializeClient() {
         HollowerConfig.load();

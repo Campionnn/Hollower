@@ -14,6 +14,7 @@ base {
 
 repositories {
 	maven { url 'https://maven.terraformersmc.com/releases/' }
+	mavenCentral()
 }
 
 dependencies {
@@ -26,6 +27,13 @@ dependencies {
 	add(modConfiguration, "net.fabricmc:fabric-loader:${project.loader_version}")
 	add(modConfiguration, "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 	add(modConfiguration, "com.terraformersmc:modmenu:${project.modmenu_version}")
+
+	testImplementation "org.junit.jupiter:junit-jupiter:${project.junit_version}"
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
 }
 
 processResources {

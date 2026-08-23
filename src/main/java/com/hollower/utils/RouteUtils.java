@@ -11,6 +11,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
 public final class RouteUtils {
@@ -130,6 +132,7 @@ public final class RouteUtils {
     public static void importRouteFromClipboard() {
         Hollower.positions.clear();
         Hollower.selected = null;
+        orderBeforeOptimize = null;
         try {
             List<BlockPos> imported = RouteExportCodec.decode(Hollower.getClipboard());
             if (imported.isEmpty()) throw new IllegalArgumentException("No waypoints found");
@@ -145,6 +148,7 @@ public final class RouteUtils {
     public static void loadRoute(RouteStorage.SavedRoute route) {
         Hollower.positions.clear();
         Hollower.selected = null;
+        orderBeforeOptimize = null;
         Hollower.positions.addAll(route.positions());
         Hollower.sendChatMessage("Route '" + route.name() + "' loaded");
     }
@@ -152,7 +156,99 @@ public final class RouteUtils {
     public static void clearRoute() {
         Hollower.positions.clear();
         Hollower.selected = null;
+        orderBeforeOptimize = null;
         Hollower.sendChatMessage("Route cleared");
+    }
+
+    // ---------------------------------------------------------------- optimizing
+
+    private static final AtomicBoolean optimizing = new AtomicBoolean();
+    // The order the route had before the last optimize that actually changed something, so the
+    // player can get their hand-tuned ordering back.
+    private static List<BlockPos> orderBeforeOptimize;
+
+    public static boolean isOptimizing() {
+        return optimizing.get();
+    }
+
+    public static boolean canUndoOptimize() {
+        return orderBeforeOptimize != null;
+    }
+
+    public static void undoOptimize() {
+        if (orderBeforeOptimize == null) return;
+        Hollower.positions.clear();
+        Hollower.positions.addAll(orderBeforeOptimize);
+        orderBeforeOptimize = null;
+        Hollower.sendChatMessage("Route order restored");
+    }
+
+    // Reorders the route in place. The search runs on a worker thread so a large route can't stall
+    // the client, and the result is applied back on the client thread because Hollower.positions is
+    // a plain list that RenderUtils walks every frame. `onDone` runs on the client thread too, with
+    // the result, or with null if nothing was applied.
+    public static void optimizeRoute(RouteOptimizer.Options options,
+                                     Consumer<RouteOptimizer.Result> onDone) {
+        List<BlockPos> snapshot = List.copyOf(Hollower.positions);
+        if (snapshot.size() < 4) {
+            Hollower.sendChatMessage("§cAdd at least four route nodes before optimizing");
+            onDone.accept(null);
+            return;
+        }
+        if (snapshot.size() > RouteOptimizer.MAX_NODES) {
+            Hollower.sendChatMessage("§cRoutes longer than " + RouteOptimizer.MAX_NODES
+                    + " nodes are too large to optimize");
+            onDone.accept(null);
+            return;
+        }
+        if (!optimizing.compareAndSet(false, true)) {
+            Hollower.sendChatMessage("§cAlready optimizing this route");
+            return;
+        }
+
+        Thread worker = new Thread(() -> {
+            RouteOptimizer.Result result;
+            try {
+                result = RouteOptimizer.optimize(snapshot, options);
+            } catch (RuntimeException error) {
+                Hollower.LOGGER.error("Route optimization failed", error);
+                Minecraft.getInstance().execute(() -> {
+                    optimizing.set(false);
+                    Hollower.sendChatMessage("§cFailed to optimize route");
+                    onDone.accept(null);
+                });
+                return;
+            }
+            Minecraft.getInstance().execute(() -> applyOptimized(snapshot, result, onDone));
+        }, "Hollower Route Optimizer");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private static void applyOptimized(List<BlockPos> snapshot, RouteOptimizer.Result result,
+                                       Consumer<RouteOptimizer.Result> onDone) {
+        optimizing.set(false);
+
+        // The player can keep editing while the search runs; a reordering of a route that no longer
+        // exists would silently resurrect deleted nodes.
+        if (!Hollower.positions.equals(snapshot)) {
+            Hollower.sendChatMessage("§cRoute changed while optimizing, so the new order was discarded");
+            onDone.accept(null);
+            return;
+        }
+        if (!result.changed()) {
+            Hollower.sendChatMessage("Route order is already optimal for these settings");
+            onDone.accept(result);
+            return;
+        }
+
+        orderBeforeOptimize = snapshot;
+        Hollower.positions.clear();
+        Hollower.positions.addAll(result.order());
+        // Optimizing is a permutation, so whatever was selected is still in the route.
+        Hollower.sendChatMessage(String.format("Route optimized: %.0f → %.0f (-%.1f%%)",
+                result.costBefore(), result.costAfter(), result.improvementPercent()));
+        onDone.accept(result);
     }
 
     public static void setBlocksInRoute() {
