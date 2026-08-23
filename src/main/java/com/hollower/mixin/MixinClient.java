@@ -35,8 +35,8 @@ public abstract class MixinClient {
             } else {
                 RouteUtils.addPosition(RouteUtils.getRaycast());
             }
+            Hollower.lastToolUseTick = client.level.getGameTime();
         }
-        Hollower.lastToolUseTick = client.level.getGameTime();
         callback.cancel();
     }
 

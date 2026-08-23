@@ -49,6 +49,7 @@ final class MiscBlocks {
             "dark_oak_slab",
             "diorite",
             "torch",
+            "wall_torch",
             "white_stained_glass",
             "gray_terracotta",
             "black_terracotta",
