@@ -149,6 +149,13 @@ public final class RouteUtils {
         }
     }
 
+    public static void loadRoute(RouteStorage.SavedRoute route) {
+        Hollower.positions.clear();
+        Hollower.selected = null;
+        Hollower.positions.addAll(route.positions());
+        Hollower.sendChatMessage("Route '" + route.name() + "' loaded");
+    }
+
     public static void clearRoute() {
         Hollower.positions.clear();
         Hollower.selected = null;

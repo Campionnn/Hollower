@@ -266,6 +266,9 @@ public final class HollowerConfigScreen extends Screen {
         actions.add(tip(confirmAction("Set Blocks In Route", nodes > 0, RouteUtils::setBlocksInRoute),
                 "Place a bedrock block at each node, so the route is visible as real blocks.\n"
                         + "Local worlds only. Asks for a second click first." + needsRoute));
+        actions.add(tip(action("Routes...", true,
+                        button -> ClientCompat.setScreen(Minecraft.getInstance(), new RouteManagerScreen(this))),
+                "Save the current route, or load, rename, move or delete your saved routes."));
         y = place(y, 2, actions) + 8;
 
         y = addHeading(y, "Editing");
