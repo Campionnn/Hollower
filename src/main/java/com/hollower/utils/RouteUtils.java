@@ -105,13 +105,6 @@ public final class RouteUtils {
         return getRaycast(Hollower.maxReach);
     }
 
-    public static float getDistance(BlockPos first, BlockPos second) {
-        return (float) Math.sqrt(
-                Math.pow(first.getX() - second.getX(), 2)
-                        + Math.pow(first.getY() - second.getY(), 2)
-                        + Math.pow(first.getZ() - second.getZ(), 2));
-    }
-
     public static boolean copyRouteToClipboard(RouteExportCodec.Target target) {
         if (Hollower.positions.isEmpty()) {
             Hollower.sendChatMessage("§cAdd at least one route node before exporting");

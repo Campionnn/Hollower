@@ -110,9 +110,9 @@ public final class RouteManagerScreen extends Screen {
         applyScroll();
     }
 
-    private <T extends AbstractWidget> T track(T widget, int baseY) {
+    private void track(AbstractWidget widget, int baseY) {
         placed.add(new Placed(widget, baseY, widget.active));
-        return addRenderableWidget(widget);
+        addRenderableWidget(widget);
     }
 
     private int contentHeight() {
