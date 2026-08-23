@@ -1,6 +1,7 @@
 package com.hollower.utils;
 
 import com.hollower.Hollower;
+import com.hollower.render.SelectiveRender;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Environment(EnvType.CLIENT)
 public final class PlayerUtils implements AttackBlockCallback {
@@ -44,13 +46,18 @@ public final class PlayerUtils implements AttackBlockCallback {
         return RouteUtils.getRaycast(Hollower.etherwarpRange);
     }
 
+    private static boolean isClear(BlockPos pos) {
+        BlockState state = CLIENT.level.getBlockState(pos);
+        return state.isAir() || SelectiveRender.isPassable(state);
+    }
+
     public static void etherwarp() {
         BlockPos pos = getEtherwarpBlock();
         if (pos == null || CLIENT.level == null || CLIENT.getConnection() == null) return;
 
         BlockPos feet = pos.above();
         BlockPos head = feet.above();
-        if (!CLIENT.level.getBlockState(feet).isAir() || !CLIENT.level.getBlockState(head).isAir()) {
+        if (!isClear(feet) || !isClear(head)) {
             Hollower.sendChatMessage("§cCannot teleport to that location");
             return;
         }
