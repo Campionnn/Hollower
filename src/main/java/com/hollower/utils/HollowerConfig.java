@@ -50,6 +50,9 @@ public final class HollowerConfig {
         int selectBlockColor = 0x400000FF;
         float orderScale = 0.04f;
 
+        boolean renderRegionBorders = false;
+        float regionBorderOpacity = 0.5f;
+
         float optimizeHorizontalScale = 1.0f;
         float optimizeVerticalScale = 2.0f;
         float optimizeTurnWeight = 8.0f;
@@ -93,6 +96,9 @@ public final class HollowerConfig {
         Hollower.selectBlockColor = data.selectBlockColor;
         Hollower.orderScale = data.orderScale;
 
+        Hollower.renderRegionBorders = data.renderRegionBorders;
+        Hollower.regionBorderOpacity = data.regionBorderOpacity;
+
         Hollower.optimizeHorizontalScale = data.optimizeHorizontalScale;
         Hollower.optimizeVerticalScale = data.optimizeVerticalScale;
         Hollower.optimizeTurnWeight = data.optimizeTurnWeight;
@@ -124,6 +130,9 @@ public final class HollowerConfig {
         data.outlineBlockWidth = Hollower.outlineBlockWidth;
         data.selectBlockColor = Hollower.selectBlockColor;
         data.orderScale = Hollower.orderScale;
+
+        data.renderRegionBorders = Hollower.renderRegionBorders;
+        data.regionBorderOpacity = Hollower.regionBorderOpacity;
 
         data.optimizeHorizontalScale = Hollower.optimizeHorizontalScale;
         data.optimizeVerticalScale = Hollower.optimizeVerticalScale;

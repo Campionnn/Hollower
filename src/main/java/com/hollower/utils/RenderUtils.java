@@ -4,6 +4,10 @@ import com.hollower.Hollower;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -25,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.OptionalDouble;
 
 @Environment(EnvType.CLIENT)
 public final class RenderUtils {
@@ -59,6 +64,25 @@ public final class RenderUtils {
                     .sortOnUpload()
                     .createRenderSetup()
     );
+    private static final Identifier BARRIER_TEXTURE =
+            Identifier.fromNamespaceAndPath("minecraft", "textures/item/barrier.png");
+    // GUI_TEXTURED_SNIPPET already wires up a textured, tinted, translucent quad (position + uv +
+    // colour, Sampler0 bound) - only depth testing and culling need to change for a through-walls quad.
+    private static final RenderPipeline REGION_BORDER_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation(Identifier.fromNamespaceAndPath(Hollower.MOD_ID, "pipeline/region_borders"))
+                    .withCull(false)
+                    .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+                    .build()
+    );
+    private static GpuSampler regionBorderSampler;
+    private static final RenderType REGION_BORDERS = RenderType.create(
+            "hollower_region_borders",
+            RenderSetup.builder(REGION_BORDER_PIPELINE)
+                    .withTexture("Sampler0", BARRIER_TEXTURE, RenderUtils::regionBorderSampler)
+                    .sortOnUpload()
+                    .createRenderSetup()
+    );
 
     private RenderUtils() {
     }
@@ -84,6 +108,10 @@ public final class RenderUtils {
         outlineBlocks(collector, poseStack, Hollower.positions, Hollower.outlineBlockColor, Hollower.outlineBlockWidth);
         selectBlock(collector, poseStack, Hollower.selected, Hollower.selectBlockColor);
         renderOrder(collector, poseStack, camera, Hollower.positions, Hollower.orderScale);
+
+        if (Hollower.renderRegionBorders) {
+            renderRegionBorders(collector, poseStack);
+        }
 
         if (PlayerUtils.isHoldingTool() && Hollower.isKeyPressed(Hollower.etherwarpKey)) {
             selectBlock(collector, poseStack, PlayerUtils.getEtherwarpBlock(), Hollower.etherwarpBlockColor);
@@ -212,6 +240,67 @@ public final class RenderUtils {
         });
     }
 
+    // World bounds run from (201, 30, 201) to (824, 189, 824). The border planes mark the horizontal
+    // extent at sea level, plus two crossing vertical planes near the center that only rise above it.
+    private static final float WORLD_MIN = 201.0f;
+    private static final float WORLD_MAX = 824.0f;
+    private static final float WORLD_BORDER_Y = 64.0f;
+    private static final float WORLD_TOP_Y = 189.0f;
+    // The X-fixed plane isn't perfectly centered: past the Z-fixed plane (in the positive Z direction)
+    // it sits one block further out, so the crossing seam splits it into two quads.
+    private static final float CROSS_X_NEAR = 512.0f;
+    private static final float CROSS_X_FAR = 513.0f;
+    private static final float CROSS_Z = 514.0f;
+    // One barrier icon per block, so the tiled texture reads as a clear grid along the boundary.
+    private static final float TILE = 1.0f;
+
+    private static GpuSampler regionBorderSampler() {
+        if (regionBorderSampler == null) {
+            regionBorderSampler = RenderSystem.getDevice().createSampler(
+                    AddressMode.REPEAT, AddressMode.REPEAT,
+                    FilterMode.NEAREST, FilterMode.NEAREST,
+                    1, OptionalDouble.empty());
+        }
+        return regionBorderSampler;
+    }
+
+    private static void renderRegionBorders(
+            SubmitNodeCollector collector,
+            PoseStack poseStack
+    ) {
+        // Always white - only the opacity is configurable.
+        int alpha = Math.clamp(Math.round(Hollower.regionBorderOpacity * 255.0f), 0, 255);
+        int color = (alpha << 24) | 0xFFFFFF;
+        submit(collector, poseStack, REGION_BORDERS, (pose, consumer) -> {
+            // Horizontal plane at y=64, spanning the whole world footprint.
+            texturedQuad(pose, consumer, color,
+                    WORLD_MIN, WORLD_BORDER_Y, WORLD_MIN, WORLD_MIN / TILE, WORLD_MIN / TILE,
+                    WORLD_MAX, WORLD_BORDER_Y, WORLD_MIN, WORLD_MAX / TILE, WORLD_MIN / TILE,
+                    WORLD_MAX, WORLD_BORDER_Y, WORLD_MAX, WORLD_MAX / TILE, WORLD_MAX / TILE,
+                    WORLD_MIN, WORLD_BORDER_Y, WORLD_MAX, WORLD_MIN / TILE, WORLD_MAX / TILE);
+
+            // Vertical plane fixed at z=514, spanning x and rising from y=64 to the top of the world.
+            texturedQuad(pose, consumer, color,
+                    WORLD_MIN, WORLD_BORDER_Y, CROSS_Z, WORLD_MIN / TILE, WORLD_BORDER_Y / TILE,
+                    WORLD_MAX, WORLD_BORDER_Y, CROSS_Z, WORLD_MAX / TILE, WORLD_BORDER_Y / TILE,
+                    WORLD_MAX, WORLD_TOP_Y, CROSS_Z, WORLD_MAX / TILE, WORLD_TOP_Y / TILE,
+                    WORLD_MIN, WORLD_TOP_Y, CROSS_Z, WORLD_MIN / TILE, WORLD_TOP_Y / TILE);
+
+            // Vertical X-fixed plane, split at the z=514 seam: x=512 on the near side, x=513 beyond it.
+            texturedQuad(pose, consumer, color,
+                    CROSS_X_NEAR, WORLD_BORDER_Y, WORLD_MIN, WORLD_MIN / TILE, WORLD_BORDER_Y / TILE,
+                    CROSS_X_NEAR, WORLD_BORDER_Y, CROSS_Z, CROSS_Z / TILE, WORLD_BORDER_Y / TILE,
+                    CROSS_X_NEAR, WORLD_TOP_Y, CROSS_Z, CROSS_Z / TILE, WORLD_TOP_Y / TILE,
+                    CROSS_X_NEAR, WORLD_TOP_Y, WORLD_MIN, WORLD_MIN / TILE, WORLD_TOP_Y / TILE);
+
+            texturedQuad(pose, consumer, color,
+                    CROSS_X_FAR, WORLD_BORDER_Y, CROSS_Z, CROSS_Z / TILE, WORLD_BORDER_Y / TILE,
+                    CROSS_X_FAR, WORLD_BORDER_Y, WORLD_MAX, WORLD_MAX / TILE, WORLD_BORDER_Y / TILE,
+                    CROSS_X_FAR, WORLD_TOP_Y, WORLD_MAX, WORLD_MAX / TILE, WORLD_TOP_Y / TILE,
+                    CROSS_X_FAR, WORLD_TOP_Y, CROSS_Z, CROSS_Z / TILE, WORLD_TOP_Y / TILE);
+        });
+    }
+
     private static void submit(
             SubmitNodeCollector collector,
             PoseStack poseStack,
@@ -272,6 +361,34 @@ public final class RenderUtils {
         vertex(pose, consumer, x2, y2, z2, color);
         vertex(pose, consumer, x3, y3, z3, color);
         vertex(pose, consumer, x4, y4, z4, color);
+    }
+
+    private static void texturedQuad(
+            PoseStack.Pose pose,
+            VertexConsumer consumer,
+            int color,
+            float x1, float y1, float z1, float u1, float v1,
+            float x2, float y2, float z2, float u2, float v2,
+            float x3, float y3, float z3, float u3, float v3,
+            float x4, float y4, float z4, float u4, float v4
+    ) {
+        texturedVertex(pose, consumer, x1, y1, z1, u1, v1, color);
+        texturedVertex(pose, consumer, x2, y2, z2, u2, v2, color);
+        texturedVertex(pose, consumer, x3, y3, z3, u3, v3, color);
+        texturedVertex(pose, consumer, x4, y4, z4, u4, v4, color);
+    }
+
+    private static void texturedVertex(
+            PoseStack.Pose pose,
+            VertexConsumer consumer,
+            float x,
+            float y,
+            float z,
+            float u,
+            float v,
+            int color
+    ) {
+        vertex(pose, consumer, x, y, z, color).setUv(u, v);
     }
 
     private static VertexConsumer vertex(

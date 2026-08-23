@@ -315,13 +315,23 @@ public final class HollowerConfigScreen extends Screen {
         y += 8;
 
         y = addHeading(y, "Selection & Labels");
-        place(y, 2, List.of(
+        y = place(y, 2, List.of(
                 tip(color("Selected Block", () -> Hollower.selectBlockColor,
                                 value -> Hollower.selectBlockColor = value),
                         "Fill colour of the node you currently have selected."),
                 tip(ValueSlider.ofFloat(0, 0, 0, "Order Text Size", 0.0f, 0.2f, Hollower.orderScale, 3,
                                 value -> Hollower.orderScale = value),
                         "Size of the position number floating above each node. Set to 0 to hide them.")));
+        y += 8;
+
+        y = addHeading(y, "Region Borders");
+        place(y, 2, List.of(
+                tip(ToggleButton.create(0, 0, 0, "Render Region Borders",
+                                () -> Hollower.renderRegionBorders, value -> Hollower.renderRegionBorders = value),
+                        "Draws faint guide planes at the world's edge and center."),
+                tip(ValueSlider.ofFloat(0, 0, 0, "Opacity", 0.0f, 1.0f, Hollower.regionBorderOpacity, 2,
+                                value -> Hollower.regionBorderOpacity = value),
+                        "Opacity of the border planes. Keep it low — these are very large.")));
     }
 
     private void buildSelectiveRenderTab() {

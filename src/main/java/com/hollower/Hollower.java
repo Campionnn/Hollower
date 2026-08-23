@@ -65,6 +65,9 @@ public class Hollower implements ClientModInitializer {
     public static int etherwarpRange = 61;
     public static float orderScale = 0.04f;
 
+    public static boolean renderRegionBorders = false;
+    public static float regionBorderOpacity = 0.5f;
+
     // Route order optimizer. Height changes cost double by default, since climbing between mining
     // spots is slower than walking the same distance flat.
     public static float optimizeHorizontalScale = 1.0f;
