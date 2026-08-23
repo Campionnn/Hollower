@@ -5,13 +5,8 @@ import net.fabricmc.api.Environment;
 
 import java.util.List;
 
-/**
- * The block ids behind {@link HiddenBlockGroup#MISC} — every decorative block the Crystal Hollows
- * generates that isn't a gemstone or an ore.
- * <p>
- * Kept in its own file purely because of its length; hiding it would otherwise bury
- * {@link HiddenBlockGroup}'s far more interesting entries under 110 lines of terrain.
- */
+// The block ids behind HiddenBlockGroup.MISC: every decorative block the Crystal Hollows generates
+// that isn't a gemstone or an ore. Kept in its own file so it doesn't bury HiddenBlockGroup's entries.
 @Environment(EnvType.CLIENT)
 final class MiscBlocks {
     private MiscBlocks() {

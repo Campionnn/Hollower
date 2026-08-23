@@ -9,13 +9,8 @@ import net.minecraft.network.chat.Component;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-/**
- * An on/off control that reads {@code Label: ON}.
- * <p>
- * The state lives inside the button's own label rather than in a separate widget pinned to the far side
- * of the row, which is the whole point: there is no gap between the name and the value to track across,
- * so a column of these stays readable at any window width.
- */
+// An on/off control that reads "Label: ON", with the state in the button's own label rather than a
+// separate widget across the row.
 @Environment(EnvType.CLIENT)
 public final class ToggleButton {
     private ToggleButton() {
@@ -35,7 +30,7 @@ public final class ToggleButton {
                 .build();
     }
 
-    /** {@code Label: } in plain white, the state in green or grey so it reads at a glance. */
+    // "Label: " in plain white, the state in green or grey so it reads at a glance.
     public static Component format(String label, boolean on) {
         return Component.literal(label + ": ")
                 .append(Component.literal(on ? "ON" : "OFF")

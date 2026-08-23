@@ -1,29 +1,56 @@
 package com.hollower.render;
 
 import com.hollower.Hollower;
-import com.hollower.utils.RenderTweaks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Which {@link HiddenBlockGroup}s are currently hidden, and the one place that pushes them into
- * {@link Hollower#renderBlacklistID}.
- * <p>
- * The blacklist is rebuilt wholesale from the enabled set rather than patched group by group, so a group
- * can be added or its block list edited without anyone having to write the matching removal. A chunk
- * refresh is expensive, so {@link #apply()} does one only when the resulting id set actually differs from
- * what is already loaded.
- */
+// Tracks which HiddenBlockGroups are hidden, and answers the two questions the rest of the mod asks
+// about a block: should it be drawn (isHidden) and should the player pass through it (isPassable).
+// Hiding is done by changing what a block answers about itself in MixinBlockStateBase, not by editing
+// the world, so it works under any chunk mesher including Sodium's.
 @Environment(EnvType.CLIENT)
 public final class SelectiveRender {
     private static final EnumSet<HiddenBlockGroup> hidden = EnumSet.noneOf(HiddenBlockGroup.class);
 
+    // Immutable snapshot; swapped, never mutated, so mesher threads can read it without locking.
+    private static volatile Set<Block> blocks = Set.of();
+    private static volatile boolean renderActive;
+    private static volatile boolean passThroughActive;
+
     private SelectiveRender() {
+    }
+
+    public static void initialize() {
+        // passThrough depends on being in a local world, so it has to be re-derived every tick.
+        ClientTickEvents.END_CLIENT_TICK.register(client ->
+                passThroughActive = renderActive && client.hasSingleplayerServer());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> setEnabled(false));
+    }
+
+    // True when this block should be invisible and stop occluding. Called on every mesh rebuild and
+    // face-culling test, so it stays cheap.
+    public static boolean isHidden(BlockState state) {
+        return renderActive && blocks.contains(state.getBlock());
+    }
+
+    // True when the player should pass straight through this block. Only ever true in a local world.
+    public static boolean isPassable(BlockState state) {
+        return passThroughActive && blocks.contains(state.getBlock());
     }
 
     public static boolean isHidden(HiddenBlockGroup group) {
@@ -51,19 +78,29 @@ public final class SelectiveRender {
         apply();
     }
 
+    // The master switch. Flipping it re-meshes the loaded sections; nothing else changes.
+    public static void setEnabled(boolean value) {
+        if (Hollower.renderToggle == value) return;
+        Hollower.renderToggle = value;
+        refreshFlags();
+        markDirty();
+    }
+
     public static int hiddenCount() {
         return hidden.size();
     }
 
-    /** Enum names of the hidden groups, for {@code HollowerConfig} to persist. */
+    // How many block types the enabled groups actually resolved to. Zero means nothing will hide.
+    public static int blockCount() {
+        return blocks.size();
+    }
+
+    // Enum names of the hidden groups, for HollowerConfig to persist.
     public static List<String> saveState() {
         return hidden.stream().map(Enum::name).toList();
     }
 
-    /**
-     * Restores a persisted set. Unknown names are skipped rather than fatal, so a config written by a
-     * newer build (or one whose group was renamed) still loads the groups it can.
-     */
+    // Restores a persisted set, skipping any name that no longer matches a group.
     public static void loadState(List<String> names) {
         hidden.clear();
         if (names == null) return;
@@ -77,19 +114,44 @@ public final class SelectiveRender {
         }
     }
 
-    /** Rebuilds the blacklist from the enabled groups, refreshing loaded chunks only if it changed. */
+    // Rebuilds the block set from the enabled groups, re-meshing only if it actually changed.
     public static void apply() {
-        Set<String> wanted = new HashSet<>();
+        Set<Block> wanted = new HashSet<>();
         for (HiddenBlockGroup group : hidden) {
-            wanted.addAll(group.blockIds());
+            for (String name : group.blockNames()) {
+                // Unknown ids are skipped rather than fatal, since some only exist in certain versions.
+                BuiltInRegistries.BLOCK.getOptional(Identifier.withDefaultNamespace(name))
+                        .ifPresent(wanted::add);
+            }
         }
 
-        if (wanted.equals(new HashSet<>(Hollower.renderBlacklistID.values()))) return;
+        if (wanted.equals(blocks)) return;
 
-        Hollower.renderBlacklistID.clear();
-        for (String id : wanted) {
-            Hollower.renderBlacklistID.put(id.hashCode(), id);
-        }
-        RenderTweaks.refreshRender();
+        blocks = Set.copyOf(wanted);
+        refreshFlags();
+        markDirty();
+    }
+
+    private static void refreshFlags() {
+        boolean active = Hollower.renderToggle && !blocks.isEmpty();
+        renderActive = active;
+        passThroughActive = active && Minecraft.getInstance().hasSingleplayerServer();
+    }
+
+    // Queues a rebuild of every loaded section. Paid once per toggle, not per chunk.
+    private static void markDirty() {
+        Minecraft client = Minecraft.getInstance();
+        client.execute(() -> {
+            ClientLevel level = client.level;
+            LocalPlayer player = client.player;
+            if (level == null || player == null) return;
+
+            int radius = client.options.getEffectiveRenderDistance() + 1;
+            int sectionX = SectionPos.blockToSectionCoord(player.getBlockX());
+            int sectionZ = SectionPos.blockToSectionCoord(player.getBlockZ());
+            level.setSectionRangeDirty(
+                    sectionX - radius, level.getMinSectionY(), sectionZ - radius,
+                    sectionX + radius, level.getMaxSectionY(), sectionZ + radius);
+        });
     }
 }

@@ -6,15 +6,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -57,17 +54,8 @@ public final class NoClipController {
     public static boolean canDisable(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null) return true;
-        if (!client.level.noCollision(player)) return false;
-
-        AABB bounds = player.getBoundingBox().deflate(1.0E-5);
-        for (BlockPos pos : BlockPos.betweenClosed(
-                BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ),
-                BlockPos.containing(bounds.maxX, bounds.maxY, bounds.maxZ)
-        )) {
-            BlockState hiddenState = Hollower.renderBlacklistState.get(pos.asLong());
-            if (hiddenState != null && !hiddenState.getCollisionShape(client.level, pos).isEmpty()) return false;
-        }
-        return true;
+        // Hidden blocks are passable in their own right now, so noCollision already accounts for them.
+        return client.level.noCollision(player);
     }
 
     private static void tickClient(Minecraft client) {

@@ -8,13 +8,8 @@ import net.minecraft.network.chat.Style;
 
 import java.util.function.IntSupplier;
 
-/**
- * A colour control that reads {@code Label: ████}, the blocks drawn in the colour itself.
- * <p>
- * Using text glyphs for the swatch keeps this a plain {@link Button} — no custom rendering, and so no
- * per-Minecraft-version render code — while still showing the value inline instead of in a separate
- * widget across the row.
- */
+// A colour control that reads "Label: ████", the blocks drawn in the colour itself. Text glyphs for the
+// swatch keep this a plain Button with no custom rendering needed.
 @Environment(EnvType.CLIENT)
 public final class ColorButton {
     private static final String SWATCH = "████";

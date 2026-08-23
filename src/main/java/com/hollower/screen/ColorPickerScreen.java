@@ -16,14 +16,8 @@ import net.minecraft.network.chat.Style;
 
 import java.util.function.IntConsumer;
 
-/**
- * Picks one colour with red/green/blue sliders and a hex field, previewing the result live.
- * <p>
- * Replaces Cloth Config's colour field. Alpha is not offered: every colour Hollower renders has a fixed
- * transparency — the two selection highlights are always {@code 0x40}, the lines always opaque — so the
- * original alpha is carried through untouched rather than surfaced as a control that would mostly be
- * ignored.
- */
+// Picks one colour with red/green/blue sliders and a hex field, previewing the result live. Alpha isn't
+// offered since every colour Hollower renders has a fixed transparency; the original alpha just passes through.
 @Environment(EnvType.CLIENT)
 public final class ColorPickerScreen extends Screen {
     private static final int ROW = 24;
@@ -42,7 +36,7 @@ public final class ColorPickerScreen extends Screen {
     private ValueSlider greenSlider;
     private ValueSlider blueSlider;
     private EditBox hexField;
-    /** Guards the slider/hex-field responders from re-entering each other while syncing. */
+    // Guards the slider/hex-field responders from re-entering each other while syncing.
     private boolean syncing;
 
     public ColorPickerScreen(Screen parent, String label, int argb, IntConsumer onAccept) {
@@ -128,7 +122,7 @@ public final class ColorPickerScreen extends Screen {
         refreshPreview();
     }
 
-    /** Accepts partial input silently — the field is only applied once it parses as six hex digits. */
+    // Accepts partial input silently; only applies once it parses as six hex digits.
     private void onHexTyped(String text) {
         if (syncing) return;
         String cleaned = text.startsWith("#") ? text.substring(1) : text;

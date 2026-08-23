@@ -54,13 +54,6 @@ public final class PlayerUtils implements AttackBlockCallback {
             Hollower.sendChatMessage("§cCannot teleport to that location");
             return;
         }
-        if (Hollower.renderToggle
-                && (Hollower.renderBlacklistState.containsKey(feet.asLong())
-                || Hollower.renderBlacklistState.containsKey(head.asLong()))) {
-            Hollower.sendChatMessage("§cCannot teleport to that location due to hidden blocks");
-            return;
-        }
-
         Hollower.lastCommands.add("Teleported");
         CLIENT.getConnection().sendCommand(
                 "tp " + feet.getX() + " " + feet.getY() + " " + feet.getZ());

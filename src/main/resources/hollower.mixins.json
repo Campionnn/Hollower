@@ -14,6 +14,7 @@
     "MixinLivingEntity",
     "MixinMouse",
     "MixinPlayerNoClip",
-    "render.MixinWorld"
+    "render.MixinBlockEntityRenderDispatcher",
+    "render.MixinBlockStateBase"
   ]
 }

@@ -7,7 +7,6 @@ import com.hollower.utils.HollowerConfig;
 import com.hollower.utils.KeyBindingCompat;
 import com.hollower.utils.NoClipController;
 import com.hollower.utils.PlayerUtils;
-import com.hollower.utils.RenderTweaks;
 import com.hollower.utils.RenderUtils;
 import com.hollower.utils.RouteUtils;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -23,14 +22,12 @@ import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.state.BlockState;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Environment(EnvType.CLIENT)
 public class Hollower implements ClientModInitializer {
@@ -43,10 +40,6 @@ public class Hollower implements ClientModInitializer {
     public static int maxReach = 20;
     public static BlockPos selected;
     public static final ArrayList<String> lastCommands = new ArrayList<>();
-    public static final ConcurrentHashMap<Long, ConcurrentHashMap<Long, BlockPos>> renderBlacklist =
-            new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<Long, BlockState> renderBlacklistState = new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<Integer, String> renderBlacklistID = new ConcurrentHashMap<>();
 
     public static InputConstants.Key configKey = key(GLFW.GLFW_KEY_C);
     public static InputConstants.Key nudgeKey = key(GLFW.GLFW_KEY_LEFT_CONTROL);
@@ -62,7 +55,7 @@ public class Hollower implements ClientModInitializer {
     public static volatile boolean noClip;
     public static boolean fullBright = true;
 
-    /** Colours are packed ARGB. The two selection highlights are deliberately translucent. */
+    // Colours are packed ARGB. The two selection highlights are deliberately translucent.
     public static int routeLineColor = 0xFFFF0000;
     public static float routeLineWidth = 3.0f;
     public static int outlineBlockColor = 0xFF00FF00;
@@ -79,7 +72,7 @@ public class Hollower implements ClientModInitializer {
         AttackBlockCallback.EVENT.register(new PlayerUtils());
         RenderUtils.initialize();
         LevelRenderEvents.COLLECT_SUBMITS.register(RenderUtils::render);
-        RenderTweaks.initialize();
+        SelectiveRender.initialize();
         NoClipController.initialize();
         initializeKeyBindings();
 
@@ -118,9 +111,15 @@ public class Hollower implements ClientModInitializer {
     }
 
     private static void toggleSelectiveRender() {
-        renderToggle = !renderToggle;
-        sendChatMessage("Selective rendering " + (renderToggle ? "enabled" : "disabled"));
-        RenderTweaks.reloadRender();
+        SelectiveRender.setEnabled(!renderToggle);
+        if (!renderToggle) {
+            sendChatMessage("Selective rendering disabled");
+        } else if (SelectiveRender.blockCount() == 0) {
+            sendChatMessage("§eSelective rendering enabled, but no groups are selected");
+        } else {
+            sendChatMessage("Selective rendering enabled ("
+                    + SelectiveRender.blockCount() + " block types hidden)");
+        }
     }
 
     private static void toggleNoClip() {

@@ -9,7 +9,6 @@ import com.hollower.screen.widget.ToggleButton;
 import com.hollower.screen.widget.ValueSlider;
 import com.hollower.utils.ClientCompat;
 import com.hollower.utils.HollowerConfig;
-import com.hollower.utils.RenderTweaks;
 import com.hollower.utils.RouteUtils;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.EnvType;
@@ -35,22 +34,8 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-/**
- * Hollower's config screen.
- * <p>
- * Two things shape the layout. First, every control is <em>self-labelling</em> — "Fullbright: ON",
- * "Max Reach: 20", "Ruby: Hidden" — so the name and the value share one widget. The screen this replaced
- * pinned each label to the far left and its control to the far right, which at any reasonable window
- * width left a gulf between them and made it genuinely hard to tell which toggle belonged to which row.
- * Fusing the two removes the problem rather than mitigating it, and it lets controls sit in narrow
- * columns instead of stretching across the screen.
- * <p>
- * Second, actions are buttons. The old screen expressed "export route" and "clear route" as boolean
- * options that fired when you saved and closed the menu; here they do the thing when clicked, and the two
- * destructive ones ask first by turning into their own confirmation.
- * <p>
- * Everything applies immediately, so there is no Save button — {@link #onClose()} just writes to disk.
- */
+// Hollower's config screen. Controls are self-labelling ("Fullbright: ON") so name and value share one
+// widget, and actions are buttons that act immediately rather than deferred save-on-close options.
 @Environment(EnvType.CLIENT)
 public final class HollowerConfigScreen extends Screen {
     private static final int ROW_HEIGHT = 24;
@@ -72,23 +57,20 @@ public final class HollowerConfigScreen extends Screen {
     private final Screen parent;
     private Tab tab = Tab.ROUTE;
 
-    /** Resting labels of the confirm-first buttons, so one can be restored when its confirm lapses. */
+    // Resting labels of the confirm-first buttons, so one can be restored when its confirm lapses.
     private final Map<Button, String> confirmLabels = new HashMap<>();
 
-    /**
-     * The tab's own widgets and the y each sits at when unscrolled. Tab bar and Done are not in here —
-     * they stay put. Every build method works in these unscrolled coordinates and {@link #applyScroll()}
-     * translates them, so no layout code has to know scrolling exists.
-     */
+    // The tab's own widgets and the y each sits at when unscrolled (tab bar and Done are not in here).
+    // applyScroll() translates these into screen coordinates.
     private final List<Placed> placed = new ArrayList<>();
     private int scroll;
 
     private record Placed(AbstractWidget widget, int baseY, boolean enabled) {
     }
 
-    /** The keybind control waiting for a keystroke, or null. At most one is ever armed. */
+    // The keybind control waiting for a keystroke, or null. At most one is ever armed.
     private KeyBindControl armedKey;
-    /** The destructive action awaiting its second click, or null. Cleared whenever anything else moves. */
+    // The destructive action awaiting its second click, or null.
     private Button pendingConfirm;
 
     public HollowerConfigScreen(Screen parent) {
@@ -122,7 +104,7 @@ public final class HollowerConfigScreen extends Screen {
     protected void init() {
         armedKey = null;
         pendingConfirm = null;
-        // The old buttons are gone after a rebuild; keeping their labels would leak an entry per rebuild.
+        // Old buttons are gone after a rebuild, so their labels would just leak otherwise.
         confirmLabels.clear();
         placed.clear();
         addTabBar();
@@ -141,7 +123,7 @@ public final class HollowerConfigScreen extends Screen {
         applyScroll();
     }
 
-    /** Registers a tab widget at its unscrolled y and adds it to the screen. */
+    // Registers a tab widget at its unscrolled y and adds it to the screen.
     private <T extends AbstractWidget> T track(T widget, int baseY, boolean enabled) {
         placed.add(new Placed(widget, baseY, enabled));
         return addRenderableWidget(widget);
@@ -159,10 +141,7 @@ public final class HollowerConfigScreen extends Screen {
         return Math.max(0, contentHeight() - (viewportBottom() - viewportTop()));
     }
 
-    /**
-     * Moves the tab's widgets by the current offset and hides whatever falls outside the viewport, so a
-     * control scrolled under the Done button can neither be seen nor clicked.
-     */
+    // Moves the tab's widgets by the current scroll offset and hides whatever falls outside the viewport.
     private void applyScroll() {
         scroll = Math.clamp(scroll, 0, maxScroll());
         for (Placed entry : placed) {
@@ -196,8 +175,7 @@ public final class HollowerConfigScreen extends Screen {
         for (int i = 0; i < tabs.length; i++) {
             Tab target = tabs[i];
             boolean current = target == tab;
-            // Every tab stays clickable. Marking the current one by disabling its button would have
-            // Minecraft grey the label out, which reads as "unavailable" rather than "you are here".
+            // Every tab stays clickable; the current one is marked by styling its label, not disabling it.
             Button button = Button.builder(
                             current
                                     ? Component.literal("> " + target.title)
@@ -211,16 +189,14 @@ public final class HollowerConfigScreen extends Screen {
     }
 
     private void selectTab(Tab target) {
-        // A new tab starts at the top; re-picking the current one is a no-op you can click freely.
+        // A new tab starts scrolled to the top.
         if (target != tab) scroll = 0;
         tab = target;
         rebuildWidgets();
     }
 
-    /**
-     * Lays widgets out in {@code columns} equal columns, filling left to right then top to bottom.
-     * Returns the y of the first free row so a caller can carry on beneath what it just placed.
-     */
+    // Lays widgets out in equal columns, filling left to right then top to bottom, and returns the y of
+    // the first free row.
     private int place(int top, int columns, List<? extends AbstractWidget> widgets) {
         int gap = 4;
         int each = (contentWidth() - gap * (columns - 1)) / columns;
@@ -228,7 +204,6 @@ public final class HollowerConfigScreen extends Screen {
             AbstractWidget widget = widgets.get(i);
             widget.setX(contentLeft() + (i % columns) * (each + gap));
             widget.setWidth(each);
-            // active is set here rather than read back later, so applyScroll can restore it faithfully.
             track(widget, top + (i / columns) * ROW_HEIGHT, widget.active);
         }
         int rows = (widgets.size() + columns - 1) / columns;
@@ -249,10 +224,7 @@ public final class HollowerConfigScreen extends Screen {
         track(new StringWidget(contentLeft(), top, contentWidth(), 12, text, font), top, false);
     }
 
-    /**
-     * Attaches hover help to a control. Every option gets one: the labels say what a setting is, and the
-     * tooltip is where the detail that used to sit in the old menu's descriptions lives.
-     */
+    // Attaches hover help text to a control.
     private static <T extends AbstractWidget> T tip(T widget, String text) {
         widget.setTooltip(Tooltip.create(Component.literal(text)));
         return widget;
@@ -271,8 +243,7 @@ public final class HollowerConfigScreen extends Screen {
         y += 18;
 
         y = addHeading(y, "Actions");
-        // Three of the four need a route to act on. Saying so in the tooltip beats leaving a greyed
-        // button with no explanation for why it will not respond.
+        // Three of the four actions need a route to act on.
         String needsRoute = nodes > 0 ? "" : "\nUnavailable: add some nodes first.";
 
         List<Button> actions = new ArrayList<>();
@@ -352,10 +323,7 @@ public final class HollowerConfigScreen extends Screen {
                         "Turns selective render on and off from in game."),
                 tip(ToggleButton.create(0, 0, 0, "Selective Render",
                                 () -> Hollower.renderToggle,
-                                value -> {
-                                    Hollower.renderToggle = value;
-                                    RenderTweaks.reloadRender();
-                                }),
+                                SelectiveRender::setEnabled),
                         "The master switch. While this is off, nothing below has any effect.")));
         y += 4;
 
@@ -372,8 +340,7 @@ public final class HollowerConfigScreen extends Screen {
                         "Bring every group back into view.")));
         y += 8;
 
-        // Three narrow columns: the labels are short, and short rows are what make a toggle grid
-        // scannable — the eye never has to travel from a name on the left to a state on the right.
+        // Three narrow columns per category keeps the toggle grid scannable.
         for (HiddenBlockGroup.Category category : HiddenBlockGroup.Category.values()) {
             List<Button> toggles = new ArrayList<>();
             for (HiddenBlockGroup group : HiddenBlockGroup.values()) {
@@ -384,7 +351,7 @@ public final class HollowerConfigScreen extends Screen {
             y = place(y, 3, toggles) + 6;
         }
 
-        addNote(y, "Each hidden group adds lag when crossing chunk borders.");
+        addNote(y, "Hidden blocks still light the world, so leave Fullbright on.");
     }
 
     private void buildPlayerTab() {
@@ -424,7 +391,6 @@ public final class HollowerConfigScreen extends Screen {
 
     private Button action(String label, boolean enabled, Consumer<Button> onPress) {
         Button button = Button.builder(Component.literal(label), pressed -> {
-                    // Reaching for a different action means you thought better of the pending confirm.
                     clearPendingConfirm();
                     onPress.accept(pressed);
                 })
@@ -435,10 +401,7 @@ public final class HollowerConfigScreen extends Screen {
         return button;
     }
 
-    /**
-     * A destructive action that asks first: the button becomes its own confirmation, so the second click
-     * lands on the same target the first one did rather than on a dialog that appeared under the cursor.
-     */
+    // A destructive action that asks first by turning the button itself into its own confirmation.
     private Button confirmAction(String label, boolean enabled, Runnable onConfirm) {
         Button[] self = new Button[1];
         self[0] = Button.builder(Component.literal(label), button -> {
@@ -496,7 +459,7 @@ public final class HollowerConfigScreen extends Screen {
                 group.help());
     }
 
-    /** The group's own colour for its name, so the grid is scannable by hue as well as by word. */
+    // The group's own colour for its name, so the grid is scannable by hue as well as by word.
     private Component groupLabel(HiddenBlockGroup group) {
         boolean hidden = SelectiveRender.isHidden(group);
         return Component.literal(group.label() + ": ")
@@ -511,7 +474,7 @@ public final class HollowerConfigScreen extends Screen {
     public boolean keyPressed(KeyEvent event) {
         int pressed = event.key();
         if (armedKey != null) {
-            // Escape backs out of the capture without rebinding, so a mis-click is recoverable.
+            // Escape backs out of the capture without rebinding.
             if (pressed != GLFW.GLFW_KEY_ESCAPE) {
                 armedKey.bind(Hollower.key(pressed));
             } else {

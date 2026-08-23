@@ -7,13 +7,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.function.DoubleConsumer;
 
-/**
- * A numeric control that reads {@code Label: 20} with the fill showing where in its range it sits.
- * <p>
- * Replaces the old text fields, which gave no sense of a sensible range — "Max Reach" accepted any
- * integer above 1 with nothing to say that 25 is reasonable and 4000 is not. Like {@link ToggleButton},
- * the label and the value share one widget so there is no gap between them.
- */
+// A numeric control that reads "Label: 20" with the fill showing where in its range it sits.
 @Environment(EnvType.CLIENT)
 public final class ValueSlider extends AbstractSliderButton {
     private final String label;
@@ -38,7 +32,7 @@ public final class ValueSlider extends AbstractSliderButton {
         updateMessage();
     }
 
-    /** A slider over whole numbers; the value is rounded before it reaches {@code setter}. */
+    // A slider over whole numbers; the value is rounded before it reaches the setter.
     public static ValueSlider ofInt(
             int x, int y, int width,
             String label,
@@ -49,7 +43,7 @@ public final class ValueSlider extends AbstractSliderButton {
                 value -> setter.accept((int) Math.round(value)));
     }
 
-    /** A slider over a fractional value, shown to {@code decimals} places. */
+    // A slider over a fractional value, shown to `decimals` places.
     public static ValueSlider ofFloat(
             int x, int y, int width,
             String label,
@@ -61,7 +55,7 @@ public final class ValueSlider extends AbstractSliderButton {
                 value -> setter.accept((float) value));
     }
 
-    /** The JDK has {@code IntConsumer} and {@code DoubleConsumer} but no float equivalent. */
+    // The JDK has IntConsumer and DoubleConsumer but no float equivalent.
     @FunctionalInterface
     public interface FloatConsumer {
         void accept(float value);
@@ -76,10 +70,7 @@ public final class ValueSlider extends AbstractSliderButton {
         return min + value * (max - min);
     }
 
-    /**
-     * Moves the handle to {@code newValue} without invoking the setter — for when something else already
-     * owns the change (the hex field in {@code ColorPickerScreen} driving the R/G/B sliders).
-     */
+    // Moves the handle to newValue without invoking the setter, for when something else already owns the change.
     public void syncValue(double newValue) {
         this.value = fraction(newValue, min, max);
         updateMessage();

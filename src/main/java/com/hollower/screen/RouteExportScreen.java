@@ -12,13 +12,8 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/**
- * Picks the format a route is copied to the clipboard in.
- * <p>
- * Opened straight from the config screen's "Export Route" button and returns to it, which is why there is
- * no longer a deferred-open dance here: that only existed because the old Cloth Config menu had to finish
- * closing before another screen could take its place.
- */
+// Picks the format a route is copied to the clipboard in. Opened straight from the config screen's
+// "Export Route" button and returns to it when done.
 @Environment(EnvType.CLIENT)
 public final class RouteExportScreen extends Screen {
     private final Screen parent;

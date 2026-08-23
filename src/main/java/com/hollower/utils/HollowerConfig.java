@@ -18,13 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Persists the {@link Hollower} settings that should survive a game restart: keybinds, max reach,
- * fullbright, etherwarp options, route render options, and which selective-render groups are hidden.
- * <p>
- * Runtime state is deliberately left out — {@code renderToggle} and {@code noClip} are per-session, so
- * writing them would silently re-enable noclip on the next launch.
- */
+// Persists the Hollower settings that should survive a restart: keybinds, max reach, fullbright,
+// etherwarp options, route render options, and which selective-render groups are hidden. Runtime state
+// like renderToggle and noClip is left out since it's per-session.
 @Environment(EnvType.CLIENT)
 public final class HollowerConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -54,11 +50,11 @@ public final class HollowerConfig {
         int selectBlockColor = 0x400000FF;
         float orderScale = 0.04f;
 
-        /** Enum names of the hidden {@code HiddenBlockGroup}s — names, so reordering the enum is safe. */
+        // Enum names of the hidden HiddenBlockGroups, so reordering the enum is safe.
         List<String> hiddenGroups = List.of();
     }
 
-    /** Loads persisted values into {@link Hollower}'s static fields. Call before keybindings are registered. */
+    // Loads persisted values into Hollower's static fields. Call before keybindings are registered.
     public static void load() {
         if (!Files.isRegularFile(PATH)) return;
 
@@ -94,7 +90,7 @@ public final class HollowerConfig {
         SelectiveRender.loadState(data.hiddenGroups);
     }
 
-    /** Writes the current values of the persisted fields to disk. */
+    // Writes the current values of the persisted fields to disk.
     public static void save() {
         Data data = new Data();
         data.configKey = Hollower.getConfigKey().getValue();

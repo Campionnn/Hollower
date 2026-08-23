@@ -5,17 +5,8 @@ import net.fabricmc.api.Environment;
 
 import java.util.List;
 
-/**
- * A group of blocks that selective render can hide as a unit.
- * <p>
- * Each constant carries its display name and an accent colour matched to the block it hides, alongside
- * the block ids that do the hiding. Ids are stored as bare names and expanded to
- * {@code block.minecraft.<name>} by {@link #blockIds()}, because that is the form the blacklist is keyed
- * by: {@code RenderTweaks.findBlocksChunk} looks up {@code getDescriptionId().hashCode()}.
- * <p>
- * Adding a group is a matter of adding a constant. The screen enumerates {@link #values()} and
- * {@link SelectiveRender} applies whatever it finds, so neither needs touching.
- */
+// A group of blocks that selective render can hide as a unit. Each constant has a display name, an
+// accent colour, and the block ids (bare paths, minecraft namespace) that get hidden.
 @Environment(EnvType.CLIENT)
 public enum HiddenBlockGroup {
     RUBY(Category.GEMSTONE, "Ruby", 0xFF5555,
@@ -43,7 +34,7 @@ public enum HiddenBlockGroup {
 
     MISC(Category.OTHER, "Everything else", 0xAAAAAA, MiscBlocks.NAMES);
 
-    /** How the groups are banded in the config screen. */
+    // How the groups are banded in the config screen.
     public enum Category {
         GEMSTONE("Gemstones"),
         ORE("Ores"),
@@ -84,21 +75,17 @@ public enum HiddenBlockGroup {
         return label;
     }
 
-    /** RGB used for this group's name in the GUI, chosen to match the block it hides. */
+    // RGB used for this group's name in the GUI, chosen to match the block it hides.
     public int accent() {
         return accent;
     }
 
-    /** The translation keys this group hides, in the {@code block.minecraft.*} form the blacklist uses. */
-    public List<String> blockIds() {
-        return blockNames.stream().map(name -> "block.minecraft." + name).toList();
+    // The registry paths this group hides, all in the minecraft namespace.
+    public List<String> blockNames() {
+        return blockNames;
     }
 
-    /**
-     * Hover help for the group's toggle. Derived from the category rather than stored per constant —
-     * every gemstone and every ore says the same thing about itself, so writing it out fifteen times
-     * would only create fifteen chances to let one drift.
-     */
+    // Hover help for the group's toggle, derived from the category so it doesn't need repeating per constant.
     public String help() {
         return switch (category) {
             case GEMSTONE -> "Hides " + label + " gemstone crystals, in both block and pane form.";

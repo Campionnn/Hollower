@@ -60,9 +60,8 @@ Download the latest release from the [releases page](https://github.com/Campionn
 * While holding shift, press the Use Item/Place Block key to teleport on top of the block you are looking at (Etherwarp)
 * Selective Rendering:
     * Allows you to enable/disable the rendering certain blocks so you don't get distracted by unnecessary clutter
-    * This feature can be very intensive on Minecraft especially at high render distances
-    * You will likely experience some stutters while crossing chunk borders because it has to process the newly loaded chunks
-    * Because the blocks are only hidden client side, you can run into ghost blocks. Use noclip in a local world to move through them.
+    * In a local world hidden blocks are also passable, so you can walk and look straight through them without needing noclip
+    * Hidden blocks still block light, so a hidden wall leaves the space behind it dark. Leave fullbright on
 * Remove fog so you can see as far as your render distance
 
 ### Planned/Work in Progress
