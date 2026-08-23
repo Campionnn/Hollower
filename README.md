@@ -58,6 +58,14 @@ Download the latest release from the [releases page](https://github.com/Campionn
     * Holding the Swap Order Key and selecting another node will swap the positions of the two nodes
 * Scrolling while holding the Swap Order Key will rotate the order of all the nodes (to change the location of the first node)
 * While holding shift, press the Use Item/Place Block key to teleport on top of the block you are looking at (Etherwarp)
+* Route Management:
+    * Save and load multiple routes with folder organization
+    * Rename, delete, and move routes between folders
+    * Access via the config menu Route tab > Routes... button
+* Route Optimizer:
+    * Reorder your route's nodes into a shorter, straighter path without moving them
+    * Customize cost parameters: horizontal/vertical distance scaling, turn penalties, closed-loop vs one-way traversal, and pin-first-node options
+    * Shows estimated improvement percentage and supports undo
 * Selective Rendering:
     * Allows you to enable/disable the rendering certain blocks so you don't get distracted by unnecessary clutter
     * In a local world hidden blocks are also passable, so you can walk and look straight through them without needing noclip
@@ -65,10 +73,9 @@ Download the latest release from the [releases page](https://github.com/Campionn
 * Remove fog so you can see as far as your render distance
 
 ### Planned/Work in Progress
-* Menu to save/manage multiple routes so you can easily edit or copy them
 * Visualizing reachable gemstones from each node
 * Render a plane to visualize where the magma field starts (maybe not necessary)
-* Automatically create very optimized routes using given parameters similar to [seafoam](https://astanik.dev/seafoam/) but better (probably far future)
+* Automatically generate optimized routes from scratch using given parameters similar to [seafoam](https://astanik.dev/seafoam/) but better (probably far future)
 * Highlight selected nodes in the route a different color for organization
 * Commands for route management
 * Keybind/command to set block below current position and add it to the route
